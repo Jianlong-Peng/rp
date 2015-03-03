@@ -5,7 +5,7 @@
 #        Email: jlpeng1201@gmail.com
 #     HomePage: 
 #      Created: 2014-09-20 10:12:52
-#   LastChange: 2014-11-01 05:05:44
+#   LastChange: 2015-03-03 14:30:27
 #      History:
 =============================================================================*/
 #include <iostream>
@@ -54,7 +54,11 @@ extern int num_types;
 extern vector<svm_parameter*> para;
 extern int operator_type;
 extern vector<bool> is_som;
-extern float (*obj_func)(vector<double>&, vector<PredictResult>&);
+//extern float (*obj_func)(vector<double>&, vector<PredictResult>&);
+extern bool calc_auc;
+extern bool calc_iap;
+extern bool calc_consistency;
+extern double belta;
 
 
 inline float get_random_c(int cmin=-8, int cmax=8)
@@ -292,6 +296,7 @@ int myCrossover(const GAGenome &p1, const GAGenome &p2, GAGenome *c1, GAGenome *
     return n;
 }
 
+/*
 float calc_sum_x2(GA1DArrayGenome<float> &g)
 {
     float val = 0.;
@@ -304,6 +309,7 @@ float obj_1(vector<double> &actualY, vector<PredictResult> &predictY)
     double mrss = calcRSS(actualY, predictY) / actualY.size();
     return STA_CAST(float, 1./mrss);
 }
+*/
 /*
 float obj_2(vector<double> &actualY, vector<PredictResult> &predictY, GA1DArrayGenome<float> &g)
 {
@@ -311,6 +317,7 @@ float obj_2(vector<double> &actualY, vector<PredictResult> &predictY, GA1DArrayG
     return STA_CAST(float, 1./mrss+calc_sum_x2(g)/actualY.size());
 }
 */
+/*
 float obj_3(vector<double> &actualY, vector<PredictResult> &predictY)
 {
     double mrss = calcRSS(actualY, predictY) / actualY.size();
@@ -329,6 +336,7 @@ float obj_3(vector<double> &actualY, vector<PredictResult> &predictY)
         return STA_CAST(float, 1./mrss+mauc);
     }
 }
+*/
 /*
 float obj_4(vector<double> &actualY, vector<PredictResult> &predictY, GA1DArrayGenome<float> &g)
 {
@@ -353,6 +361,7 @@ float obj_4(vector<double> &actualY, vector<PredictResult> &predictY, GA1DArrayG
 /*
  * IAP = num of ( val+ > val- ) / N+*N-
  */
+/*
 float obj_5(vector<double> &actualY, vector<PredictResult> &predictY)
 {
     double mrss = calcRSS(actualY, predictY) / actualY.size();
@@ -364,6 +373,7 @@ float obj_5(vector<double> &actualY, vector<PredictResult> &predictY)
         return STA_CAST(float, 1./mrss+miap);
     }
 }
+*/
 
 class CandidateIndices
 {
@@ -384,6 +394,8 @@ vector<float> obj_values;
 vector<float> population;
 pthread_mutex_t mut;
 
+// if begin <= end, then use all training samples to train the model, and
+// apply the model to training set
 static void do_each(int begin, int end, vector<double> &actualY, vector<PredictResult> &predictY, int ii)
 {
     int i,j,k,idx_genome;
@@ -508,6 +520,10 @@ static void do_each(int begin, int end, vector<double> &actualY, vector<PredictR
         */
         int max_num_xs = *max_element(num_xs.begin(), num_xs.end());
         struct svm_node *x = (struct svm_node*)malloc(sizeof(struct svm_node)*(max_num_xs+1));
+        if(begin >= end) {
+            begin = 0;
+            end = train_set.num_samples();
+        }
         for(i=begin; i<end; ++i) {
             PredictResult val;
             val.y = 0.;
@@ -541,6 +557,47 @@ static void do_each(int begin, int end, vector<double> &actualY, vector<PredictR
     
 }
 
+static float obj_func(vector<double> &actualY, vector<PredictResult> &predictY)
+{
+    int n = STA_CAST(int, actualY.size());
+    double mrss = calcRSS(actualY, predictY) / n;
+    double mauc=0., miap=0., mdelta=0.;
+    // `calc_auc` and `calc_iap` are both for estimating if the predicted value
+    // is consistent to the observed SOMs
+    if(calc_auc) {
+        int k = 0;
+        for(vector<PredictResult>::size_type i=0; i<predictY.size(); ++i) {
+            if(!predictY[i].som.empty()) {
+                mauc += calcAUC(predictY[i].som, predictY[i].each_y);
+                ++k;
+            }
+        }
+        mauc /= k;
+    }
+    if(calc_iap) {
+        vector<double> iap = calcIAP(actualY, predictY);
+        miap = accumulate(iap.begin(), iap.end(), 0.) / iap.size();
+    }
+    // for each atom site, the `actualY` and `predictY` should be consistency - mrss
+    if(calc_consistency) {
+        int k = 0;
+        for(vector<PredictResult>::size_type i=0; i<predictY2.size(); ++i) {
+            for(vector<double>::size_type j=0; j<predictY2[i].each_y.size(); ++j) {
+                double temp_actual  = train_set[i].y + log10(population[k]);
+                double temp_predict = predictY2[i].each_y[j];
+                mdelta += pow(temp_predict - temp_actual, 2);
+                ++k;
+            }
+        }
+        mdelta /= k;
+    }
+    if(mrss < 1e-3)
+        mrss = 1e-3;
+    if(mdelta < 1e-3)
+        mdelta = 1e-3;
+    return STA_CAST(float, 1./mrss+mauc+miap+belta*1./mdelta);
+}
+
 static void *doCV(void *arg)
 {
     int i,j;
@@ -561,7 +618,7 @@ static void *doCV(void *arg)
         obj_values[i] = obj_func(actualY, predictY);
     }
 
-	pthread_exit(0);
+    pthread_exit(0);
 }
 
 float myEvaluator(GAGenome &genome)
@@ -591,9 +648,9 @@ float myEvaluator(GAGenome &genome)
     delete myIndex;
     
 #ifdef TEST_OUTPUT
-	cout << "obj_values: ";
+    cout << "obj_values: ";
     copy(obj_values.begin(), obj_values.end(), ostream_iterator<float>(cout, " "));
-	cout << endl;
+    cout << endl;
 #endif
 
     return (accumulate(obj_values.begin(), obj_values.end(), 0.) / repeat);
