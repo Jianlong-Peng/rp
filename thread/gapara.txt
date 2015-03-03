@@ -1,0 +1,28 @@
+seed	0
+
+# ga
+number_of_generations	5000
+convergence_percentage	0.99
+generations_to_convergence	20
+mutation_probability	0.05
+crossover_probability	0.8
+minimaxi		1
+
+# population
+population_size	80
+
+# statistic
+number_of_best	1
+score_frequency	5
+flush_frequency	5
+score_filename	score.txt
+
+select_scores	255 # GAStatistics::Maximum  # 1=mean, 2=max, 4=min, 8=dev, 16=div
+record_diversity	0 # 0 gaFalse  1 gaTrue
+
+
+# special
+elitism	1 #gaTrue
+replacement_percentage	0.5
+#replacement_number	#population.size() * replacement_percentage
+

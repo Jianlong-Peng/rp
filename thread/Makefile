@@ -1,0 +1,21 @@
+GA_ROOT = /home/xmluo/jlpeng/program/ga-svm/galib247
+CFLAGS = -I$(GA_ROOT) -Wall -O2
+#CFLAGS = -I$(GA_ROOT) -Wall -g
+LDFLAGS = -L$(GA_ROOT)/ga -lga -lpthread
+
+OBJS = tools.o svm.o extern_tools.o
+
+all: ga_partition gap_cv
+
+%.o: %.cpp
+	@echo to build $@
+	@g++ $(CFLAGS) $< -c
+
+ga_partition: $(OBJS) operators.o main.o
+	@echo to build ga_partition
+	@g++ $(OBJS) operators.o main.o $(LDFLAGS) -o ga_partition
+
+gap_cv: $(OBJS) gap_cv.o
+	@echo to build gap_cv
+	@g++ $(OBJS) gap_cv.o $(LDFLAGS) -o gap_cv
+
