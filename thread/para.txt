@@ -27,7 +27,18 @@ operator_type 2
 #5  -  1/mean(RSS) + mean(IAP)
 #Attention: for type 3 and 4, `train_som` must be specified.
 #           obj function 2 and 4 are no longer supported!!!!!!
-obj_type 1
+#obj_type 1
+#
+#obj_type should be a string of length 3
+#fitness will be 1/mean(RSS) + mean(AUC(xi)) + mean(IAP) + belta * {1/mean(consistency)}
+#where, belta = [1,10]
+#obj_type[0]: mean(AUC(xi)),  where AUC(xi) to estimate whether the atom contribution is compatible to experimentally observed SOMs
+#obj_type[1]: mean(IAP)
+#obj_type[2]: 1/mean(consistency), where consistency = mean((predict_atom_contribution - partititon)^2)
+#therefore, if obj_type=100, then fitness = 1/mean(RSS) + mean(AUC)
+obj_type 011
+
+belta 2
 
 #frequency to output ga population
 freq_flush 50

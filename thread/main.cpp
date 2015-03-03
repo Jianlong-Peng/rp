@@ -5,7 +5,7 @@
 #        Email: jlpeng1201@gmail.com
 #     HomePage: 
 #      Created: 2014-09-15 09:13:56
-#   LastChange: 2014-10-11 19:00:04
+#   LastChange: 2015-03-03 14:05:37
 #      History:
 =============================================================================*/
 #include <iostream>
@@ -51,7 +51,11 @@ int operator_type(1);
 vector<bool> is_som;
 int repeat(1);   // do cross-validation {repeat} times
 int nthread(1);
-float (*obj_func)(vector<double>&, vector<PredictResult>&) = obj_1;
+//float (*obj_func)(vector<double>&, vector<PredictResult>&) = obj_1;
+bool calc_auc(false);
+bool calc_iap(false);
+bool calc_consistency(false);
+double belta(1);
 
 int kernel_type(0);
 vector<int> num_each_sample;
@@ -185,7 +189,8 @@ void parse_args(const char *infile)
         exit(EXIT_FAILURE);
     }
     string line;
-    int obj_type(1);
+    //int obj_type(1);
+    string obj_type("000");
     while(getline(inf,line)) {
         if(line.size()==0 || line[0]=='#')
             continue;
@@ -214,6 +219,13 @@ void parse_args(const char *infile)
             is >> freq_flush;
         else if(para == "obj_type") {
             is >> obj_type;
+            if(obj_type[0] == '1')
+                calc_auc = true;
+            if(obj_type[1] == '1')
+                calc_iap = true;
+            if(obj_type[2] == '1')
+                calc_consistency = true;
+            /*
             switch(obj_type) {
                 case 1: obj_func = obj_1; break;
                 //case 2: obj_func = obj_2; break;
@@ -224,7 +236,10 @@ void parse_args(const char *infile)
                         cerr << "Error: `obj_type` should be 1,3,5, but " << obj_type << " is given" << endl;
                         exit(EXIT_FAILURE);
             }
+            */
         }
+        else if(para == "belta")
+            is >> belta;
         else if(para == "operator_type")
             is >> operator_type;
         else if(para == "repeat")
@@ -260,6 +275,10 @@ void parse_args(const char *infile)
         << "output file: " << output_file << endl
         << "operator_type: " << operator_type << endl
         << "obj_type: " << obj_type << endl
+        << "  calc_auc: " << (calc_auc?"TRUE":"FALSE") << endl
+        << "  calc_iap: " << (calc_iap?"TRUE":"FALSE") << endl
+        << "  calc_consistency: " << (calc_consistency?"TRUE":"FALSE") << endl
+        << "belta: " << belta << endl;
         << "repeat: " << repeat << endl
         << "nthread: " << nthread << endl;
 }
