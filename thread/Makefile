@@ -5,7 +5,9 @@ LDFLAGS = -L$(GA_ROOT)/ga -lga -lpthread
 
 OBJS = tools.o svm.o extern_tools.o
 
-all: ga_partition gap_cv
+EXES = ga_partition gap_cv
+
+all: $(EXES)
 
 %.o: %.cpp
 	@echo to build $@
@@ -18,4 +20,7 @@ ga_partition: $(OBJS) operators.o main.o
 gap_cv: $(OBJS) gap_cv.o
 	@echo to build gap_cv
 	@g++ $(OBJS) gap_cv.o $(LDFLAGS) -o gap_cv
+
+clean:
+	rm *.o $(EXES)
 

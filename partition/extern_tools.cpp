@@ -196,6 +196,7 @@ void do_each(int begin, int end, vector<double> &actualY, vector<PredictResult> 
                             train_ys[_type].push_back(population[idx_genome]);
                         else
                             train_ys[_type].push_back(pow(10,population[idx_genome]));
+					}
                 }
                 ++idx_genome;
             }
@@ -253,9 +254,10 @@ void do_each(int begin, int end, vector<double> &actualY, vector<PredictResult> 
                     if(each_value < 0) {
                         cout << "Warning(" << __FILE__ << ":" << __LINE__ << "): predicted atom contribution < 0" << endl;
                         val.each_y.push_back(each_value);
+                    }
                     else
                         val.each_y.push_back(log10(each_value));
-                    val.y += each_y;
+                    val.y += each_value;
                 }
             }
             if(val.y < 0)

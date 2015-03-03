@@ -552,7 +552,7 @@ static float obj_func(vector<double> &actualY,
         int k = 0;
         for(vector<PredictResult>::size_type i=0; i<predictY.size(); ++i) {
             for(vector<double>::size_type j=0; j<predictY[i].each_y.size(); ++j) {
-                double temp_actual  = actualY[i].y + log10(population[k]);
+                double temp_actual  = actualY[i] + log10(population[k]);
                 double temp_predict = predictY[i].each_y[j];
                 mdelta += pow(temp_predict-temp_actual, 2);
                 ++k;

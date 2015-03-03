@@ -33,9 +33,9 @@ struct Molecule
 {
     Molecule(): hasy(false), y(1e38), num_atoms(0) {}
     // if do_log is true, the model is trained based on log(y)
-    PredictResult predict(vector<svm_model*> &models, bool do_log=true);
+    PredictResult predict(vector<svm_model*> &models, bool do_log);
     PredictResult predict(vector<svm_model*> &models, Sample &train, 
-        double (*calcKernel)(vector<double> &x, vector<double> &y), bool do_log=true);
+        double (*calcKernel)(vector<double> &x, vector<double> &y), bool do_log);
     std::string name;
     bool hasy;
     double y;   // log10(CLint)
@@ -73,9 +73,9 @@ public:
     }
     int number_atoms_of_type(int type);
     inline bool has_som() const {return som;}
-    vector<PredictResult> predict(vector<svm_model*> &models);
+    vector<PredictResult> predict(vector<svm_model*> &models, bool do_log);
     vector<PredictResult> predict(vector<svm_model*> &models, Sample &train, 
-        double (*calcKernel)(vector<double> &x, vector<double> &y));
+        double (*calcKernel)(vector<double> &x, vector<double> &y), bool do_log);
 
 private:
     vector<Molecule> data;
