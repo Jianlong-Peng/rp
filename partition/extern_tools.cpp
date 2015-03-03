@@ -30,6 +30,7 @@ extern vector<int> num_each_sample;
 extern vector<int> num_xs;
 extern int kernel_type;
 extern vector<vector<vector<double> > > kernel_matrix;
+extern bool do_log;
 
 void randomize_samples(bool verbose)
 {
@@ -184,10 +185,17 @@ void do_each(int begin, int end, vector<double> &actualY, vector<PredictResult> 
                 int _type = train_set[perm[i]].atom_type[j];
                 if(i<begin || i>=end) {
                     train_xs[_type].push_back(train_set[perm[i]].x[j]);
-                    if(fraction)
-                        train_ys[_type].push_back(log10(population[idx_genome]) + train_set[perm[i]].y);
-                    else
-                        train_ys[_type].push_back(population[idx_genome]);
+                    if(fraction) {
+                        if(do_log)
+                            train_ys[_type].push_back(log10(population[idx_genome]) + train_set[perm[i]].y);
+                        else
+                            train_ys[_type].push_back(population[idx_genome]*pow(10,train_set[perm[i]].y));
+                    }
+                    else {
+                        if(do_log)
+                            train_ys[_type].push_back(population[idx_genome]);
+                        else
+                            train_ys[_type].push_back(pow(10,population[idx_genome]));
                 }
                 ++idx_genome;
             }
@@ -237,12 +245,21 @@ void do_each(int begin, int end, vector<double> &actualY, vector<PredictResult> 
                 }
                 x[k+1].index = -1;
                 double each_value = svm_predict(models[_type], x);
-                val.each_y.push_back(each_value);
-                val.y += pow(10, each_value);
-                //val += pow(10, each_value);
+                if(do_log) {
+                    val.each_y.push_back(each_value);
+                    val.y += pow(10, each_value);
+                }
+                else {
+                    if(each_value < 0) {
+                        cout << "Warning(" << __FILE__ << ":" << __LINE__ << "): predicted atom contribution < 0" << endl;
+                        val.each_y.push_back(each_value);
+                    else
+                        val.each_y.push_back(log10(each_value));
+                    val.y += each_y;
+                }
             }
             if(val.y < 0)
-                cout << "Warning(" << __FILE__ << ":" << __LINE__ << "): sum(10^eachy) < 0, may be out of range!" << endl;
+                cout << "Warning(" << __FILE__ << ":" << __LINE__ << "): predicted Cl is negative!!" << endl;
             val.y = log10(val.y);
             actualY.push_back(train_set[perm[i]].y);
             predictY.push_back(val);
@@ -268,10 +285,18 @@ void do_each(int begin, int end, vector<double> &actualY, vector<PredictResult> 
                     probs[_type]->x[probs[_type]->l][k].value = train_set[perm[i]].x[j][k];
                 }
                 probs[_type]->x[probs[_type]->l][k].index = -1;
-                if(fraction)
-                    probs[_type]->y[probs[_type]->l] = log10(population[idx_genome]) + train_set[perm[i]].y;
-                else
-                    probs[_type]->y[probs[_type]->l] = population[idx_genome];
+                if(fraction) {
+                    if(do_log)
+                        probs[_type]->y[probs[_type]->l] = log10(population[idx_genome]) + train_set[perm[i]].y;
+                    else
+                        probs[_type]->y[probs[_type]->l] = population[idx_genome]*pow(10,train_set[perm[i]].y);
+                }
+                else {
+                    if(do_log)
+                        probs[_type]->y[probs[_type]->l] = population[idx_genome];
+                    else
+                        probs[_type]->y[probs[_type]->l] = pow(10, population[idx_genome]);
+                }
                 probs[_type]->l++;
                 ++idx_genome;
             }
@@ -287,12 +312,6 @@ void do_each(int begin, int end, vector<double> &actualY, vector<PredictResult> 
         }
 
         // predict
-        /*
-        for(i=begin; i<end; ++i) {
-            actualY.push_back(train_set[perm[i]].y);
-            predictY.push_back(train_set[perm[i]].predict(models));
-        }
-        */
         int max_num_xs = *max_element(num_xs.begin(), num_xs.end());
         struct svm_node *x = (struct svm_node*)malloc(sizeof(struct svm_node)*(max_num_xs+1));
         if(begin >= end) {
@@ -311,14 +330,25 @@ void do_each(int begin, int end, vector<double> &actualY, vector<PredictResult> 
                 }
                 x[k].index = -1;
                 double each_value = svm_predict(models[_type], x);
-                val.each_y.push_back(each_value);
-                val.y += pow(10, each_value);
+                if(do_log) {
+                    val.each_y.push_back(each_value);
+                    val.y += pow(10, each_value);
+                }
+                else {
+                    if(each_value < 0) {
+                        cout << "Warning(" << __FILE__ << ":" << __LINE__ << "): predicted atom contribution < 0" << endl;
+                        val.each_y.push_back(each_value);
+                    }
+                    else
+                        val.each_y.push_back(log10(each_value));
+                    val.y += each_value;
+                }
                 //val += pow(10, each_value);
                 if(!train_set[perm[i]].som.empty())
                     val.som.push_back(train_set[perm[i]].som[j]);
             }
             if(val.y < 0)
-                cout << "Warning(" << __FILE__ << ":" << __LINE__ << "): sum(10^eachy) < 0, may be out of range!" << endl;
+                cout << "Warning(" << __FILE__ << ":" << __LINE__ << "): predicted Cl is negative!!" << endl;
             val.y = log10(val.y);
             actualY.push_back(train_set[perm[i]].y);
             predictY.push_back(val);

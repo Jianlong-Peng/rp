@@ -40,6 +40,10 @@ obj_type 011
 
 belta 2
 
+#if do_log == 0, then models will be trained based on y instead of log10(y)
+do_log 1
+
+
 #frequency to output ga population
 freq_flush 50
 

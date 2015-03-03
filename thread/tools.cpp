@@ -5,7 +5,7 @@
 #        Email: jlpeng1201@gmail.com
 #     HomePage: 
 #      Created: 2014-09-15 19:57:13
-#   LastChange: 2014-10-31 15:57:59
+#   LastChange: 2015-03-03 15:06:51
 #      History:
 =============================================================================*/
 #include <iostream>
@@ -31,7 +31,7 @@ using std::ostringstream;
 using std::set;
 
 
-PredictResult Molecule::predict(vector<svm_model*> &models)
+PredictResult Molecule::predict(vector<svm_model*> &models, bool do_log)
 {
     PredictResult val;
     double each_value;
@@ -56,14 +56,21 @@ PredictResult Molecule::predict(vector<svm_model*> &models)
 #endif
             free(nodex);
         }
-        this->each_y.push_back(each_value);
-        val.each_y.push_back(each_value);
-        val.y += pow(10, each_value);
+        if(do_log) {
+            this->each_y.push_back(each_value);
+            val.each_y.push_back(each_value);
+            val.y += pow(10, each_value);
+        }
+        else {
+            thi->each_y.push_back(log10(each_value));
+            val.each_y.push_back(log10(each_value));
+            val.y += each_value;
+        }
         if(!som.empty())
             val.som.push_back(som[j]);
     }
     if(val.y < 0.)
-        cout << "Warning(Molecule::predict): sum(10^eachy) overflow!!!" << endl;
+        cout << "Warning(Molecule::predict): predicted CL is negative!!" << endl;
     val.y = log10(val.y);
 #ifdef DEBUG
     cout << "predicted log10(CLint)=" << val.y << endl;
@@ -73,7 +80,7 @@ PredictResult Molecule::predict(vector<svm_model*> &models)
 }
 
 PredictResult Molecule::predict(vector<svm_model*> &models, Sample &train, 
-        double (*calcKernel)(vector<double> &x, vector<double> &y))
+        double (*calcKernel)(vector<double> &x, vector<double> &y), bool do_log)
 {
     PredictResult val;
     
@@ -98,15 +105,22 @@ PredictResult Molecule::predict(vector<svm_model*> &models, Sample &train,
             }
         }
         double each_value = svm_predict(models[_type], nodex);
-        this->each_y.push_back(each_value);
-        val.each_y.push_back(each_value);
-        val.y += pow(10, each_value);
+        if(do_log) {
+            this->each_y.push_back(each_value);
+            val.each_y.push_back(each_value);
+            val.y += pow(10, each_value);
+        }
+        else {
+            this->each_y.push_back(log10(each_value));
+            val.each_y.push_back(log10(each_value));
+            val.y += each_value;
+        }
         if(!((this->som).empty()))
             val.som.push_back(this->som[i]);
         free(nodex);
     }
     if(val.y < 0.) {
-        cout << "Warning(Molecule::predict): sum(10^eachy) overflow!!!" << endl;
+        cout << "Warning(Molecule::predict): predicted Cl is negative!!" << endl;
     }
     val.y = log10(val.y);
     

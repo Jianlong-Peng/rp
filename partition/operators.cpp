@@ -5,7 +5,7 @@
 #        Email: jlpeng1201@gmail.com
 #     HomePage: 
 #      Created: 2014-09-20 10:12:52
-#   LastChange: 2014-11-24 16:29:31
+#   LastChange: 2015-03-03 15:18:32
 #      History:
 =============================================================================*/
 #include <iostream>
@@ -56,6 +56,7 @@ extern bool calc_auc;
 extern bool calc_iap;
 extern bool calc_consistency;
 extern double belta;
+extern bool do_log;
 
 
 inline float get_random_c(int cmin=-8, int cmax=8)
@@ -548,27 +549,22 @@ static float obj_func(vector<double> &actualY,
         miap = accumulate(iap.begin(), iap.end(), 0.) / iap.size();
     }
     if(calc_consistency) {
-        vector<double> actualY2;
-        vector<PredictResult> predictY2;
-        do_each(train_set.num_samples(), 0, actualY2, predictY2, population, true);
         int k = 0;
-        for(vector<PredictResult>::size_type i=0; i<predictY2.size(); ++i) {
-            for(vector<double>::size_type j=0; j<predictY2[i].each_y.size(); ++j) {
-                double temp_actual  = train_set[i].y + log10(population[k]);
-                double temp_predict = predictY2[i].each_y[j];
+        for(vector<PredictResult>::size_type i=0; i<predictY.size(); ++i) {
+            for(vector<double>::size_type j=0; j<predictY[i].each_y.size(); ++j) {
+                double temp_actual  = actualY[i].y + log10(population[k]);
+                double temp_predict = predictY[i].each_y[j];
                 mdelta += pow(temp_predict-temp_actual, 2);
                 ++k;
             }
         }
         mdelta /= k;
     }
-    //++n_calls;
-	// weight for `1./mdelta`
-    //double weight = 9 * exp(-1.0 * belta * (n_calls%80)) + 1;
-    if(mdelta != 0.)
-        return STA_CAST(float, 1./mrss+mauc+miap+belta*1./mdelta);
-    else
-        return STA_CAST(float, 1./mrss+mauc+miap+belta*mdelta);
+    if(mrss < 1e-3)
+        mrss = 1e-3;
+    if(mdelta < 1e-3)
+        mdelta = 1e-3;
+    return STA_CAST(float, 1./mrss+mauc+miap+belta*1./mdelta);
 }
 
 float myEvaluator(GAGenome &genome)

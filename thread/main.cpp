@@ -5,7 +5,7 @@
 #        Email: jlpeng1201@gmail.com
 #     HomePage: 
 #      Created: 2014-09-15 09:13:56
-#   LastChange: 2015-03-03 14:05:37
+#   LastChange: 2015-03-03 14:58:16
 #      History:
 =============================================================================*/
 #include <iostream>
@@ -56,6 +56,7 @@ bool calc_auc(false);
 bool calc_iap(false);
 bool calc_consistency(false);
 double belta(1);
+bool do_log(true);
 
 int kernel_type(0);
 vector<int> num_each_sample;
@@ -142,8 +143,8 @@ int main(int argc, char *argv[])
     log_pop << "run: " << count << endl
         << ga->population();
     while(!ga->done()) {
-		++count;
-		cout << "to do run: " << count << endl;
+        ++count;
+        cout << "to do run: " << count << endl;
         ga->step();
         if(count%freq_flush == 0) {
             log_pop << "run: " << count << endl
@@ -240,6 +241,12 @@ void parse_args(const char *infile)
         }
         else if(para == "belta")
             is >> belta;
+        else if(para == "do_log") {
+            int temp;
+            is >> temp;
+            if(temp == 0)
+                do_log = false;
+        }
         else if(para == "operator_type")
             is >> operator_type;
         else if(para == "repeat")
@@ -278,7 +285,8 @@ void parse_args(const char *infile)
         << "  calc_auc: " << (calc_auc?"TRUE":"FALSE") << endl
         << "  calc_iap: " << (calc_iap?"TRUE":"FALSE") << endl
         << "  calc_consistency: " << (calc_consistency?"TRUE":"FALSE") << endl
-        << "belta: " << belta << endl;
+        << "belta: " << belta << endl
+        << "do_log: " << (do_log?"TRUE":"FALSE") << endl
         << "repeat: " << repeat << endl
         << "nthread: " << nthread << endl;
 }

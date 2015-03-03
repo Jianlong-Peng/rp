@@ -54,6 +54,7 @@ bool calc_auc(false);
 bool calc_iap(false);
 bool calc_consistency(false);
 double belta(1);
+bool do_log(true);
 
 int kernel_type(0);
 vector<int> num_each_sample;
@@ -239,6 +240,12 @@ void parse_args(const char *infile)
             is >> operator_type;
         else if(para == "belta")
             is >> belta;
+        else if(para == "do_log") {
+            int temp;
+            is >> temp;
+            if(temp == 0)
+                do_log = false;
+        }
         else
             cerr << "Warning: invalid parameter " << para << " being ignored" << endl;
     }
@@ -267,7 +274,8 @@ void parse_args(const char *infile)
         << "  calc_auc: " << (calc_auc?"TRUE":"FALSE") << endl
         << "  calc_iap: " << (calc_iap?"TRUE":"FALSE") << endl
         << "  calc_consistency: " << (calc_consistency?"TRUE":"FALSE") << endl
-        << "belta: " << belta << endl;
+        << "belta: " << belta << endl
+        << "do_log: " << (do_log?"TRUE":"FALSE") << endl;
         
 }
 
