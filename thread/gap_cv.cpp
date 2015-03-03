@@ -327,7 +327,7 @@ static void do_each(int begin, int end, vector<double> &actualY, vector<PredictR
                 if(do_log)
                     probs[ii][_type]->y[probs[ii][_type]->l] = log10(population[idx_genome]) + train_set[perm[ii][i]].y;
                 else
-                    probs[ii][_type]->y[probs[ii][_type]->l] = population[idx_genome]*pow(10,train_set[perms[ii][i]].y);
+                    probs[ii][_type]->y[probs[ii][_type]->l] = population[idx_genome]*pow(10,train_set[perm[ii][i]].y);
                 probs[ii][_type]->l++;
                 ++idx_genome;
             }
@@ -371,6 +371,7 @@ static void do_each(int begin, int end, vector<double> &actualY, vector<PredictR
                     if(each_value < 0) {
                         cout << "Warning(" << __FILE__ << ":" << __LINE__ << "): predicted atom contribution < 0" << endl;
                         val.each_y.push_back(each_value);
+                    }
                     else
                         val.each_y.push_back(log10(each_value));
                     val.y += each_value;

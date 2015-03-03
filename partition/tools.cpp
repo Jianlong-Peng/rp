@@ -304,25 +304,25 @@ void Sample::write_svm_problem(string outfile)
     }
 }
 
-vector<PredictResult> Sample::predict(vector<svm_model*> &models)
+vector<PredictResult> Sample::predict(vector<svm_model*> &models, bool do_log)
 {
     vector<PredictResult> predictY;
     for(vector<Molecule>::size_type i=0; i<data.size(); ++i) {
 #ifdef DEBUG
         cout << ">>> " << data[i].name << "\t" << data[i].y << endl;
 #endif
-        predictY.push_back(data[i].predict(models));
+        predictY.push_back(data[i].predict(models,do_log));
     }
     
     return predictY;    
 }
 
 vector<PredictResult> Sample::predict(vector<svm_model*> &models, Sample &train, 
-        double (*calcKernel)(vector<double> &x, vector<double> &y))
+        double (*calcKernel)(vector<double> &x, vector<double> &y), bool do_log)
 {
     vector<PredictResult> predictY;
     for(vector<Molecule>::size_type i=0; i<data.size(); ++i)
-        predictY.push_back(data[i].predict(models, train, calcKernel));
+        predictY.push_back(data[i].predict(models, train, calcKernel, do_log));
     
     return predictY;   
 }

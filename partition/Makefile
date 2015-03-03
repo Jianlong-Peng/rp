@@ -6,7 +6,9 @@ LDFLAGS = -L$(GA_ROOT)/ga -lga
 
 OBJS = tools.o svm.o
 
-all: ga_partition gap_train gap_predict gap_train_p gap_cv write_svm_problem gap_analysis gap_random gap_sites
+EXES = ga_partition gap_train gap_predict gap_train_p gap_cv write_svm_problem gap_analysis gap_random gap_sites
+
+all: $(EXES)
 
 gap_train_p.o: gap_train.cpp
 	@echo to build gap_train_p.o
@@ -60,5 +62,8 @@ svm-train: svm-train.c svm.o
 
 svm-predict: svm-predict.c svm.o
 	g++ $(CFLAGS) svm.o svm-predict.c -o svm-predict
+
+clean:
+	rm *.o $(EXES)
 
 

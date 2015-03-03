@@ -542,9 +542,10 @@ static void do_each(int begin, int end, vector<double> &actualY, vector<PredictR
                     if(each_value < 0) {
                         cout << "Warning(" << __FILE__ << ":" << __LINE__ << "): predicted atom contribution < 0" << endl;
                         val.each_y.push_back(each_value);
+                    }
                     else
                         val.each_y.push_back(log10(each_value));
-                    val.y += each_y;
+                    val.y += each_value;
                 }
                 if(!train_set[perm[ii][i]].som.empty())
                     val.som.push_back(train_set[perm[ii][i]].som[j]);
@@ -588,10 +589,10 @@ static float obj_func(vector<double> &actualY, vector<PredictResult> &predictY)
     // for each atom site, the `actualY` and `predictY` should be consistency - mrss
     if(calc_consistency) {
         int k = 0;
-        for(vector<PredictResult>::size_type i=0; i<predictY2.size(); ++i) {
-            for(vector<double>::size_type j=0; j<predictY2[i].each_y.size(); ++j) {
-                double temp_actual  = actualY[i].y + log10(population[k]);
-                double temp_predict = predictY2[i].each_y[j];
+        for(vector<PredictResult>::size_type i=0; i<predictY.size(); ++i) {
+            for(vector<double>::size_type j=0; j<predictY[i].each_y.size(); ++j) {
+                double temp_actual  = actualY[i] + log10(population[k]);
+                double temp_predict = predictY[i].each_y[j];
                 mdelta += pow(temp_predict - temp_actual, 2);
                 ++k;
             }
