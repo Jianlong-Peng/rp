@@ -5,7 +5,7 @@
 #        Email: jlpeng1201@gmail.com
 #     HomePage: 
 #      Created: 2014-09-20 10:12:52
-#   LastChange: 2015-03-03 14:30:27
+#   LastChange: 2015-03-03 15:13:38
 #      History:
 =============================================================================*/
 #include <iostream>
@@ -59,6 +59,7 @@ extern bool calc_auc;
 extern bool calc_iap;
 extern bool calc_consistency;
 extern double belta;
+extern bool do_log;
 
 
 inline float get_random_c(int cmin=-8, int cmax=8)
@@ -496,7 +497,10 @@ static void do_each(int begin, int end, vector<double> &actualY, vector<PredictR
                     probs[ii][_type]->x[probs[ii][_type]->l][k].value = train_set[perm[ii][i]].x[j][k];
                 }
                 probs[ii][_type]->x[probs[ii][_type]->l][k].index = -1;
-                probs[ii][_type]->y[probs[ii][_type]->l] = log10(population[idx_genome]) + train_set[perm[ii][i]].y;
+                if(do_log)
+                    probs[ii][_type]->y[probs[ii][_type]->l] = log10(population[idx_genome]) + train_set[perm[ii][i]].y;
+                else
+                    probs[ii][_type]->y[probs[ii][_type]->l] = pow(10, train_set[perm[ii][i]].y)*population[idx_genome];
                 probs[ii][_type]->l++;
                 ++idx_genome;
             }
@@ -512,12 +516,6 @@ static void do_each(int begin, int end, vector<double> &actualY, vector<PredictR
         }
 
         // predict
-        /*
-        for(i=begin; i<end; ++i) {
-            actualY.push_back(train_set[perm[i]].y);
-            predictY.push_back(train_set[perm[i]].predict(models));
-        }
-        */
         int max_num_xs = *max_element(num_xs.begin(), num_xs.end());
         struct svm_node *x = (struct svm_node*)malloc(sizeof(struct svm_node)*(max_num_xs+1));
         if(begin >= end) {
@@ -536,14 +534,23 @@ static void do_each(int begin, int end, vector<double> &actualY, vector<PredictR
                 }
                 x[k].index = -1;
                 double each_value = svm_predict(models[_type], x);
-                val.each_y.push_back(each_value);
-                val.y += pow(10, each_value);
-                //val += pow(10, each_value);
+                if(do_log) {
+                    val.each_y.push_back(each_value);
+                    val.y += pow(10, each_value);
+                }
+                else {
+                    if(each_value < 0) {
+                        cout << "Warning(" << __FILE__ << ":" << __LINE__ << "): predicted atom contribution < 0" << endl;
+                        val.each_y.push_back(each_value);
+                    else
+                        val.each_y.push_back(log10(each_value));
+                    val.y += each_y;
+                }
                 if(!train_set[perm[ii][i]].som.empty())
                     val.som.push_back(train_set[perm[ii][i]].som[j]);
             }
             if(val.y < 0)
-                cout << "Warning(" << __FILE__ << ":" << __LINE__ << "): sum(10^eachy) < 0, may be out of range!" << endl;
+                cout << "Warning(" << __FILE__ << ":" << __LINE__ << "): predicted CL < 0, may be out of range!" << endl;
             val.y = log10(val.y);
             actualY.push_back(train_set[perm[ii][i]].y);
             predictY.push_back(val);
@@ -583,7 +590,7 @@ static float obj_func(vector<double> &actualY, vector<PredictResult> &predictY)
         int k = 0;
         for(vector<PredictResult>::size_type i=0; i<predictY2.size(); ++i) {
             for(vector<double>::size_type j=0; j<predictY2[i].each_y.size(); ++j) {
-                double temp_actual  = train_set[i].y + log10(population[k]);
+                double temp_actual  = actualY[i].y + log10(population[k]);
                 double temp_predict = predictY2[i].each_y[j];
                 mdelta += pow(temp_predict - temp_actual, 2);
                 ++k;

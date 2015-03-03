@@ -23,7 +23,6 @@ struct PredictResult
 {
     PredictResult(): y(0.) {each_y.clear(); som.clear();}
     // all are log10() transformed
-    // so, y = log10(sum{10^each_y})
     double y;
     vector<double> each_y;
     vector<bool> som;  // len(som) == len(each_y); som[i]=true/false; Attention: maybe empty!!!!
@@ -33,9 +32,10 @@ class Sample;
 struct Molecule
 {
     Molecule(): hasy(false), y(1e38), num_atoms(0) {}
-    PredictResult predict(vector<svm_model*> &models);
+    // if do_log is false, models are trained based on y instead of log10(y)
+    PredictResult predict(vector<svm_model*> &models, bool do_log);
     PredictResult predict(vector<svm_model*> &models, Sample &train, 
-        double (*calcKernel)(vector<double> &x, vector<double> &y));
+        double (*calcKernel)(vector<double> &x, vector<double> &y), bool do_log);
     std::string name;
     bool hasy;
     double y;   // log10(CLint)

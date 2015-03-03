@@ -5,7 +5,7 @@
 #        Email: jlpeng1201@gmail.com
 #     HomePage: 
 #      Created: 2014-09-22 09:25:36
-#   LastChange: 2014-10-10 10:41:50
+#   LastChange: 2015-03-03 16:13:42
 #      History:
 =============================================================================*/
 #include <iostream>
@@ -35,6 +35,7 @@ string test_file("");
 string train_file("");
 bool detail(false);
 string outfile("");
+bool do_log(true);
 
 int main(int argc, char *argv[])
 {
@@ -57,6 +58,8 @@ int main(int argc, char *argv[])
             << "                training set. Needed when pre-computed kernels are used" << endl
             << "  --detail    : <optional, default: false>" << endl
             << "                if given, atom contribution will be saved" << endl
+            << "  --no-log    : <optional>" << endl
+            << "                if given, models were trained based on y instead of log10(y)"<< endl
             << "  output      : where to save predicted results in `log10`" << endl
             << "                each line will be `name [actualY] predictY [atom:cl atom:cl ...]`" << endl
             << endl;
@@ -144,6 +147,8 @@ void parse_options(int argc, char *argv[])
             exit(EXIT_FAILURE);
             kernel_type = atoi(argv[++i]);
         }
+        else if(strcmp(argv[i], "--no-log") == 0)
+            do_log = false;
         else {
             cerr << "Error: invalid option " << argv[i] << endl;
             exit(EXIT_FAILURE);
@@ -225,7 +230,7 @@ void read_and_predict(vector<svm_model*> &models)
     
     Sample test_set;
     test_set.read_problem(test_file);
-    vector<PredictResult> predictY = test_set.predict(models);
+    vector<PredictResult> predictY = test_set.predict(models,do_log);
     vector<double> actualY;
     bool hasy(true);
     for(int i=0; i<test_set.num_samples(); ++i) {

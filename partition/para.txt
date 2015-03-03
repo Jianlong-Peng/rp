@@ -36,9 +36,12 @@ operator_type 2
 #obj_type[1]: mean(IAP)
 #obj_type[2]: 1/mean(consistency), where consistency = mean((predict_atom_contribution - partititon)^2)
 #therefore, if obj_type=100, then fitness = 1/mean(RSS) + mean(AUC)
-obj_type 101
+obj_type 011
 
 belta 2
+
+#if do_log == 0, then models will be trained based on y instead of log10(y)
+do_log 1
 
 #frequency to output ga population
 freq_flush 50

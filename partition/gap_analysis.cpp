@@ -46,6 +46,7 @@ bool calc_iap(false);
 bool calc_consistency(false);
 int run(-1);
 vector<vector<float> > population;
+bool do_log(true);
 
 void print_null(const char *s) {}
 void read_population(string &pop_file);
@@ -70,8 +71,10 @@ int main(int argc, char *argv[])
             << "    0 - RBF" << endl
             << "    1 - tanimoto kernel" << endl
             << "    2 - minMax kernel" << endl
-			<< "  --obj   str  : <default: '000'>" << endl
-			<< "                 same as specified in `para.txt`" << endl
+            << "  --obj   str  : <default: '000'>" << endl
+            << "                 same as specified in `para.txt`" << endl
+            << "  --no-log     : <optional>" << endl
+            << "    if given, models will be trained on y instead of log10(y)" << endl
             << endl;
         exit(EXIT_FAILURE);
     }
@@ -80,7 +83,7 @@ int main(int argc, char *argv[])
     string som_file("");
     string test_file("");
     string pop_file("");
-	string obj_type("000");
+    string obj_type("000");
     unsigned seed(0);
     int i;
     for(i=1; i<argc; ++i) {
@@ -112,8 +115,10 @@ int main(int argc, char *argv[])
         }
         else if(strcmp(argv[i], "--nfold") == 0)
             nfolds = atoi(argv[++i]);
-		else if(strcmp(argv[i], "--obj") == 0)
-			obj_type = argv[++i];
+        else if(strcmp(argv[i], "--obj") == 0)
+            obj_type = argv[++i];
+        else if(strcmp(argv[i], "--no-log") == 0)
+            do_log = false;
         else {
             cerr << "Error: invalid option " << argv[i];
             exit(EXIT_FAILURE);
@@ -127,21 +132,22 @@ int main(int argc, char *argv[])
         cerr << "Error: --pop is needed" << endl;
         exit(EXIT_FAILURE);
     }
-	if(obj_type[0] == '1')
-		calc_auc = true;
-	if(obj_type[1] == '1')
-		calc_iap = true;
-	if(obj_type[2] == '1')
-		calc_consistency = true;
-	
-	cout << "CMD:";
-	for(int i=0; i<argc; ++i)
-		cout << " " << argv[i];
-	cout << endl;
-	cout << "obj: " << obj_type << endl
-		<< "  calc_auc: " << ((calc_auc)?"TRUE":"FALSE") << endl
-		<< "  calc_iap: " << ((calc_iap)?"TRUE":"FALSE") << endl
-		<< "  calc_consistency: " << ((calc_consistency)?"TRUE":"FALSE") << endl;
+    if(obj_type[0] == '1')
+        calc_auc = true;
+    if(obj_type[1] == '1')
+        calc_iap = true;
+    if(obj_type[2] == '1')
+        calc_consistency = true;
+    
+    cout << "CMD:";
+    for(int i=0; i<argc; ++i)
+        cout << " " << argv[i];
+    cout << endl;
+    cout << "obj: " << obj_type << endl
+        << "  calc_auc: " << ((calc_auc)?"TRUE":"FALSE") << endl
+        << "  calc_iap: " << ((calc_iap)?"TRUE":"FALSE") << endl
+        << "  calc_consistency: " << ((calc_consistency)?"TRUE":"FALSE") << endl
+        << "do_log: " << (do_log?"TRUE":"FALSE") << endl;
 
     svm_set_print_string_function(print_null);
 
@@ -162,7 +168,7 @@ int main(int argc, char *argv[])
     if(test_file != "")
         test_set.read_problem(test_file);
 
-	cout << "OBJ = 1/mrss + mauc + miap + 1/mdelta" << endl;
+    cout << "OBJ = 1/mrss + mauc + miap + 1/mdelta" << endl;
     for(vector<vector<float> >::size_type i=0; i<population.size(); ++i) {
         cout << endl << "================genome #" << i << "=====================" << endl;
         vector<double> actualY;
@@ -173,7 +179,7 @@ int main(int argc, char *argv[])
         cout << endl << "  result of " << nfolds << "-fold cross-validation" << endl
             << "  RMSE=" << rmse << endl
             << "     R=" << r << endl
-			<< "   OBJ=" << obj_func(actualY,predictY, population[i]) << endl
+            << "   OBJ=" << obj_func(actualY,predictY, population[i]) << endl
             << endl;
         cout << endl << "  predicting results on training set:" << endl;
         predict_test_set(train_set, static_cast<int>(i));
@@ -271,7 +277,10 @@ void predict_test_set(Sample &test, int idx_pop)
                 probs[_type]->x[probs[_type]->l][k].value = train_set[i].x[j][k];
             }
             probs[_type]->x[probs[_type]->l][k].index = -1;
-            probs[_type]->y[probs[_type]->l] = log10(population[idx_pop][idx_genome]) + train_set[i].y;
+            if(do_log)
+                probs[_type]->y[probs[_type]->l] = log10(population[idx_pop][idx_genome]) + train_set[i].y;
+            else
+                probs[_type]->y[probs[_type]->l] = population[idx_pop][idx_genome]*pow(10,train_set[i].y);
             probs[_type]->l++;
             ++idx_genome;
         }
@@ -286,7 +295,7 @@ void predict_test_set(Sample &test, int idx_pop)
         models[i] = svm_train(probs[i], para);
     }
     // predict
-    vector<PredictResult> predictY = test.predict(models);
+    vector<PredictResult> predictY = test.predict(models, do_log);
     vector<double> actualY;
     for(i=0; i<test.num_samples(); ++i)
         actualY.push_back(test[i].y);
@@ -325,44 +334,41 @@ void predict_test_set(Sample &test, int idx_pop)
 }
 
 float obj_func(vector<double> &actualY,
-	vector<PredictResult> &predictY, vector<float> &population)
+    vector<PredictResult> &predictY, vector<float> &population)
 {
-	int n = static_cast<int>(actualY.size());
-	double mrss = calcRSS(actualY, predictY) / n;
-	double mauc=0., miap=0., mdelta=0.;
-	if(calc_auc) {
-		int k=0;
-		for(vector<PredictResult>::size_type i=0; i<predictY.size(); ++i) {
-			if(!predictY[i].som.empty()) {
-				mauc += calcAUC(predictY[i].som, predictY[i].each_y);
-				++k;
-			}
-		}
-		mauc /= k;
-	}
-	if(calc_iap) {
-		vector<double> iap = calcIAP(actualY, predictY);
-		miap = accumulate(iap.begin(), iap.end(), 0.) / iap.size();
-	}
-	if(calc_consistency) {
-		vector<double> actualY2;
-		vector<PredictResult> predictY2;
-		do_each(train_set.num_samples(), 0, actualY2, predictY2, population, true);
-		int k = 0;
-		for(vector<PredictResult>::size_type i=0; i<predictY2.size(); ++i) {
-			for(vector<double>::size_type j=0; j<predictY2[i].each_y.size(); ++j) {
-				double temp_actual  = train_set[i].y + log10(population[k]);
-				double temp_predict = predictY2[i].each_y[j];
-				mdelta += pow(temp_predict-temp_actual, 2);
-				++k;
-			}
-		}
-		mdelta /= k;
-	}
-	cout << "mrss=" << mrss << " mauc=" << mauc << " miap=" << miap << " mdelta=" << mdelta << endl;
-	if(mdelta != 0.)
-		return STA_CAST(float, 1./mrss+mauc+miap+1./mdelta);
-	else
-		return STA_CAST(float, 1./mrss+mauc+miap+mdelta);
+    int n = static_cast<int>(actualY.size());
+    double mrss = calcRSS(actualY, predictY) / n;
+    double mauc=0., miap=0., mdelta=0.;
+    if(calc_auc) {
+        int k=0;
+        for(vector<PredictResult>::size_type i=0; i<predictY.size(); ++i) {
+            if(!predictY[i].som.empty()) {
+                mauc += calcAUC(predictY[i].som, predictY[i].each_y);
+                ++k;
+            }
+        }
+        mauc /= k;
+    }
+    if(calc_iap) {
+        vector<double> iap = calcIAP(actualY, predictY);
+        miap = accumulate(iap.begin(), iap.end(), 0.) / iap.size();
+    }
+    if(calc_consistency) {
+        int k = 0;
+        for(vector<PredictResult>::size_type i=0; i<predictY.size(); ++i) {
+            for(vector<double>::size_type j=0; j<predictY[i].each_y.size(); ++j) {
+                double temp_actual  = actualY[i].y + log10(population[k]);
+                double temp_predict = predictY[i].each_y[j];
+                mdelta += pow(temp_predict-temp_actual, 2);
+                ++k;
+            }
+        }
+        mdelta /= k;
+    }
+    cout << "mrss=" << mrss << " mauc=" << mauc << " miap=" << miap << " mdelta=" << mdelta << endl;
+    if(mdelta != 0.)
+        return STA_CAST(float, 1./mrss+mauc+miap+1./mdelta);
+    else
+        return STA_CAST(float, 1./mrss+mauc+miap+mdelta);
 }
 

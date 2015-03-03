@@ -41,6 +41,7 @@ vector<bool> is_som;
 vector<int> perm;
 int operator_type(2);
 int ntimes(1);
+bool do_log(true);
 
 void print_null(const char *s){}
 void random_init_genome();
@@ -49,11 +50,13 @@ void predict(Sample &test, ofstream &outf);
 
 int main(int argc, char *argv[])
 {
-    if(argc!=5 && argc!=7 && argc!=9) {
+    if(argc<5 || argc>10) {
         cerr << endl << "  Usage: " << argv[0] << " [options] train_des train_som test_des output" << endl
             << endl << "  [options]" << endl
             << "  --operator int : 1 or 2<default>" << endl
             << "  --times    int : how many times repeat <default: 1>" << endl
+            << "  --no-log       : <optional>" << endl
+            << "                   if given, models ared trained on y instead of log10(y)" << endl
             << endl;
         exit(EXIT_FAILURE);
     }
@@ -71,6 +74,8 @@ int main(int argc, char *argv[])
         }
         else if(strcmp(argv[i], "--times") == 0)
             ntimes = atoi(argv[++i]);
+        else if(strcmp(argv[i], "--no-log") == 0)
+            do_log = false;
         else {
             cerr << "Error: invalid option " << argv[i] << endl;
             exit(EXIT_FAILURE);
@@ -194,6 +199,8 @@ void train_models()
         probs[i]->l = 0;
     
     idx_genome = 0;
+    else if(strcmp(argv[i], "--no-log") == 0)
+        do_log = false;
     for(i=0; i<train_set.num_samples(); ++i) {
         for(j=0; j<train_set[i].num_atoms; ++j) {
             int _type = train_set[i].atom_type[j];
@@ -202,7 +209,10 @@ void train_models()
                 probs[_type]->x[probs[_type]->l][k].value = train_set[i].x[j][k];
             }
             probs[_type]->x[probs[_type]->l][k].index = -1;
-            probs[_type]->y[probs[_type]->l] = log10(genome[idx_genome]) + train_set[i].y;
+            if(do_log)
+                probs[_type]->y[probs[_type]->l] = log10(genome[idx_genome]) + train_set[i].y;
+            else
+                probs[_type]->y[probs[_type]->l] = genome[idx_genome]*pow(10,train_set[i].y);
             probs[_type]->l++;
             ++idx_genome;
         }
@@ -220,7 +230,7 @@ void train_models()
 
 void predict(Sample &test, ofstream &outf)
 {
-    vector<PredictResult> predictY = test.predict(models);
+    vector<PredictResult> predictY = test.predict(models,do_log);
     vector<double> actualY;
     for(int i=0; i<test.num_samples(); ++i)
         actualY.push_back(test[i].y);
