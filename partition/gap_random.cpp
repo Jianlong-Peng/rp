@@ -199,8 +199,6 @@ void train_models()
         probs[i]->l = 0;
     
     idx_genome = 0;
-    else if(strcmp(argv[i], "--no-log") == 0)
-        do_log = false;
     for(i=0; i<train_set.num_samples(); ++i) {
         for(j=0; j<train_set[i].num_atoms; ++j) {
             int _type = train_set[i].atom_type[j];

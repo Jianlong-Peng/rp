@@ -73,9 +73,10 @@ public:
     }
     int number_atoms_of_type(int type);
     inline bool has_som() const {return som;}
-    vector<PredictResult> predict(vector<svm_model*> &models);
+    // if do_log is false, models are trained based on y instead of log10(y)
+    vector<PredictResult> predict(vector<svm_model*> &models, bool do_log);
     vector<PredictResult> predict(vector<svm_model*> &models, Sample &train, 
-        double (*calcKernel)(vector<double> &x, vector<double> &y));
+        double (*calcKernel)(vector<double> &x, vector<double> &y), bool do_log);
 
 private:
     vector<Molecule> data;
