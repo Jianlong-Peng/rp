@@ -1,4 +1,4 @@
-GA_ROOT = /home/simmluo/users/jlpeng/lib/galib247
+GA_ROOT = /home/xmluo/jlpeng/program/ga-svm/galib247
 CFLAGS = -I$(GA_ROOT) -Wall -O2
 #CFLAGS = -I$(GA_ROOT) -Wall -g
 CFLAGS_P = -I$(GA_ROOT) -Wall -O2 -DNTHREAD
@@ -6,7 +6,7 @@ LDFLAGS = -L$(GA_ROOT)/ga -lga
 
 OBJS = tools.o svm.o
 
-EXES = ga_partition gap_train gap_predict gap_train_p gap_cv write_svm_problem gap_analysis gap_random gap_sites
+EXES = ga_partition gap_train gap_predict gap_train_p gap_cv write_svm_problem gap_analysis gap_random gap_sites gap
 
 all: $(EXES)
 
@@ -21,6 +21,9 @@ gap_train_p.o: gap_train.cpp
 ga_partition: $(OBJS) operators.o main.o extern_tools.o
 	@echo to build ga_partition
 	@g++ $(OBJS) operators.o  extern_tools.o main.o $(LDFLAGS) -o ga_partition
+
+gap: ga_partition
+	ln -s ga_partition gap
 
 gap_train: $(OBJS) gap_train.o
 	@echo to build gap_train
