@@ -21,7 +21,7 @@
 #include <ctime>
 #include <pthread.h>
 #include "tools.h"
-#include "svm.h"
+#include "../svm/svm.h"
 #include "operators.h"
 #include "extern_tools.h"
 #include <ga/GA1DArrayGenome.h>

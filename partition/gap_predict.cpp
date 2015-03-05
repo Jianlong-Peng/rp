@@ -17,7 +17,7 @@
 #include <cmath>
 #include <cstring>
 #include <cfloat>
-#include "svm.h"
+#include "../svm/svm.h"
 #include "tools.h"
 
 using namespace std;

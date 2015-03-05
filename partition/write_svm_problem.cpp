@@ -19,7 +19,7 @@
 #include <cmath>
 #include <cstring>
 #include "tools.h"
-#include "svm.h"
+#include "../svm/svm.h"
 #include <ga/garandom.h>
 
 using namespace std;

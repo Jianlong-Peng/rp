@@ -20,7 +20,7 @@
 #include <ga/GA1DArrayGenome.h>
 #include <ga/garandom.h>
 #include "tools.h"
-#include "svm.h"
+#include "../svm/svm.h"
 #include "extern_tools.h"
 
 using namespace std;

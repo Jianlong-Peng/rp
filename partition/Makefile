@@ -4,7 +4,7 @@ CFLAGS = -I$(GA_ROOT) -Wall -O2
 CFLAGS_P = -I$(GA_ROOT) -Wall -O2 -DNTHREAD
 LDFLAGS = -L$(GA_ROOT)/ga -lga
 
-OBJS = tools.o svm.o
+OBJS = tools.o ../svm/svm.o
 
 EXES = ga_partition gap_train gap_predict gap_train_p gap_cv write_svm_problem gap_analysis gap_random gap_sites gap
 

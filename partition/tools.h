@@ -15,7 +15,7 @@
 #include <string>
 #include <vector>
 #include <algorithm>
-#include "svm.h"
+#include "../svm/svm.h"
 
 using std::vector;
 

@@ -21,7 +21,7 @@
 #include <cstring>
 #include <pthread.h>
 #include "tools.h"
-#include "svm.h"
+#include "../svm/svm.h"
 #include "extern_tools.h"
 #include <ga/garandom.h>
 

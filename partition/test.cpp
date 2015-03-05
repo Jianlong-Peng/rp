@@ -16,7 +16,7 @@
 #include <cmath>
 #include <cerrno>
 #include <pthread.h>
-#include "svm.h"
+#include "../svm/svm.h"
 
 using namespace std;
 
