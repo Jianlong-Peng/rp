@@ -3,7 +3,7 @@ CFLAGS = -I$(GA_ROOT) -Wall -O2
 #CFLAGS = -I$(GA_ROOT) -Wall -g
 LDFLAGS = -L$(GA_ROOT)/ga -lga -lpthread
 
-OBJS = tools.o svm.o extern_tools.o
+OBJS = tools.o ../svm/svm.o extern_tools.o
 
 EXES = ga_partition gap_cv gap
 

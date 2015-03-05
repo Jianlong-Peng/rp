@@ -19,7 +19,7 @@
 #include <ctime>
 #include <cmath>
 #include "tools.h"
-#include "svm.h"
+#include "../svm/svm.h"
 #include "operators.h"
 #include "extern_tools.h"
 #include <ga/GA1DArrayGenome.h>

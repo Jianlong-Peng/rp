@@ -18,7 +18,7 @@
 #include <cstdlib>
 #include <cmath>
 #include "tools.h"
-#include "svm.h"
+#include "../svm/svm.h"
 
 using std::cout;
 using std::cerr;
