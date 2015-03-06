@@ -5,7 +5,7 @@
 #        Email: jlpeng1201@gmail.com
 #     HomePage: 
 #      Created: 2015-03-05 20:33:20
-#   LastChange: 2015-03-06 11:14:34
+#   LastChange: 2015-03-06 12:44:10
 #      History:
 =============================================================================*/
 #ifndef  SVMTOOLS_H
@@ -25,13 +25,16 @@ double svm_cv(const struct svm_problem *prob, const struct svm_parameter *para, 
 class GridPara
 {
 public:
-    GridPara(const std::vector<int> &range);
+    // vector of 3-tuple (min,max,delta)
+    GridPara(const std::vector<std::vector<int> > &range);
+    // min,max,delta,...
     GridPara(int n, ...);
-    GridPara(const GridPara);
+    GridPara(const GridPara&);
     bool next();
     GridPara &operator=(const GridPara &);
 public:
-    std::vector<int> range;
+    std::vector<std::vector<int> > range;
+    // `index` for generated values
     std::vector<int> index;
 };
 
@@ -44,7 +47,7 @@ public:
 //      if sign < 0, then less `eval` returns, the better is the combination.
 //      if sign = 0, are you kidding
 double grid_search(svm_problem *prob, svm_parameter *para, 
-        int nfold, bool verbose, int sign
+        int nfold, bool verbose, int sign,
         double (*eval)(const double *act, const double *pred, int n));
 
 #endif   /* ----- #ifndef SVMTOOLS_H  ----- */
