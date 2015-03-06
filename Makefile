@@ -1,4 +1,4 @@
-dirs = svm partition thread
+dirs = svm partition thread em
 
 .PHONY: all clean $(dirs)
 
