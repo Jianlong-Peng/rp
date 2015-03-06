@@ -26,6 +26,11 @@ void print_null(const char *s) {}
 
 int main(int argc, char *argv[])
 {
+    cout << "CMD:";
+    for(int i=0; i<argc; ++i)
+        cout << " " << argv[i];
+    cout << endl;
+
     if(argc < 3) {
         cerr << endl << "OBJ" << endl
             << "  to optimize atom contribution using EM algorithm" << endl
@@ -42,8 +47,8 @@ int main(int argc, char *argv[])
             << "  --epoch  int: <default: 100>" << endl
             << "    to specify number of e- and m-step" << endl
 #ifdef NTHREAD
-			<< endl << "Attention" << endl
-			<< "  1. this is multi-thread version" << endl
+            << endl << "Attention" << endl
+            << "  1. this is multi-thread version" << endl
 #endif
             << endl;
         exit(EXIT_FAILURE);

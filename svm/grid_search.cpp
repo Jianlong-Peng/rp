@@ -55,6 +55,11 @@ void print_null(const char *s) {}
 
 int main(int argc, char *argv[])
 {
+    cout << "CMD:";
+    for(int i=0; i<argc; ++i)
+        cout << " " << argv[i];
+    cout << endl;
+
     if(argc < 2) {
         cerr << endl << "OBJ" << endl
             << "  to do grid search for svm problem" << endl

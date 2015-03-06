@@ -57,6 +57,11 @@ float obj_func(vector<double> &actualY,
 
 int main(int argc, char *argv[])
 {
+    cout << "CMD:";
+    for(int i=0; i<argc; ++i)
+        cout << " " << argv[i];
+    cout << endl;
+
     if(argc < 7) {
         cerr << endl << "  Usage: " << argv[0] << " [options]" << endl
             << endl << "  [options]" << endl

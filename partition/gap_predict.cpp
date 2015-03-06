@@ -39,6 +39,11 @@ bool do_log(true);
 
 int main(int argc, char *argv[])
 {
+    cout << "CMD:";
+    for(int i=0; i<argc; ++i)
+        cout << " " << argv[i];
+    cout << endl;
+
     if(argc == 1) {
         cerr << endl << "  Usage: " << argv[0] << " [options] output" << endl
             << endl << "[options]" << endl

@@ -54,6 +54,11 @@ void runCV(int repeat, int nthread);
 
 int main(int argc, char *argv[])
 {
+    cout << "CMD:";
+    for(int i=0; i<argc; ++i)
+        cout << " " << argv[i];
+    cout << endl;
+
     if(argc < 3) {
         cerr << endl << "  Usage: " << argv[0] << " [options] train_des train_partition" << endl
             << endl << "[options]" << endl
@@ -418,7 +423,7 @@ static void *doCV(void *arg)
         pthread_mutex_unlock(&mut);
     }
 
-	pthread_exit(0);
+    pthread_exit(0);
 }
 
 void runCV(int repeat, int nthread)

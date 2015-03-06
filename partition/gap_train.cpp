@@ -45,6 +45,11 @@ void print_null(const char *s) {}
 
 int main(int argc, char *argv[])
 {
+    cout << "CMD:";
+    for(int i=0; i<argc; ++i)
+        cout << " " << argv[i];
+    cout << endl;
+
     if(argc<4 || argc>8) {
         cerr << endl << "  Usage: " << argv[0] << " [options] train_des train_partition model_name" << endl
             << endl << "[options]" << endl
