@@ -5,7 +5,7 @@
 #        Email: jlpeng1201@gmail.com
 #     HomePage: 
 #      Created: 2014-09-20 11:19:23
-#   LastChange: 2014-10-10 13:48:27
+#   LastChange: 2015-03-06 16:59:08
 #      History:
 =============================================================================*/
 #include <iostream>
@@ -20,6 +20,7 @@
 #include <cstring>
 #include "tools.h"
 #include "../svm/svm.h"
+#include "../svm/svmtools.h"
 #ifdef NTHREAD
 #include <pthread.h>
 #endif
@@ -334,30 +335,7 @@ void create_svm_problems(Sample &train_set, vector<float> &population)
 
 }
 
-static svm_parameter* create_svm_parameter()
-{
-    svm_parameter *para = (struct svm_parameter*)malloc(sizeof(struct svm_parameter));
-    para->svm_type = EPSILON_SVR;
-    if(kernel_type == 0)
-        para->kernel_type = RBF;
-    else
-        para->kernel_type = PRECOMPUTED;
-    para->degree = 3;
-    para->gamma = 0.;
-    para->coef0 = 0;
-    para->cache_size = 100;
-    para->eps = 0.001;
-    para->C = 1.0;
-    para->nr_weight = 0;
-    para->weight_label = NULL;
-    para->weight = NULL;
-    para->nu = 0.5;
-    para->p = 0.1;
-    para->shrinking = 1;
-    para->probability = 0;
-    return para;
-}
-
+/*
 double eval(const double *actualY, const double *predictY, int n)
 {
     double val = 0.;
@@ -396,22 +374,23 @@ double grid_search(svm_problem *prob, svm_parameter *para)
     free(target);
     return best_val;
 }
-
+*/
 #ifdef NTHREAD
 pthread_mutex_t mut;
 void *train_each(void *arg)
 {
     int i = *(int*)arg;
-    svm_parameter *para = create_svm_parameter();
+    svm_parameter *para = create_svm_parameter();  // svmtools.h
     pthread_mutex_lock(&mut);
     cout << "do grid search for atom type " << i << endl
         << "number of samples: " << probs[i]->l << endl;
     pthread_mutex_unlock(&mut);
-    double rmse = grid_search(probs[i], para);
+    CV cv(probs[i]);
+    double rmse = grid_search(cv, para, 5, false, -1, calcRSS);  // svmtools.h
     pthread_mutex_lock(&mut);
     cout << "best svm parameter for atom type " << i << ":  "
         << "c=" << para->C << ", g=" << para->gamma << ", p=" << para->p
-        << ",  rmse=" << rmse << endl;
+        << ",  RSS=" << rmse << endl;
     pthread_mutex_unlock(&mut);
     svm_model *model = svm_train(probs[i], para);
     ostringstream os;
@@ -453,10 +432,11 @@ void train_save_svm_models()
         if(do_search) {
             cout << "do grid search for atom type " << i << endl
                 << "number of samples: " << probs[i]->l << endl;
-            double rmse = grid_search(probs[i], para);
+            CV cv(probs[i]);
+            double rmse = grid_search(cv, para, 5, false, -1, calcRSS); // svmtools.h
             cout << "best svm parameter for atom type " << i << ":  "
                 << "c=" << para->C << ", g=" << para->gamma << ", p=" << para->p
-                << ",  rmse=" << rmse << endl;
+                << ",  RSS=" << rmse << endl;
         }
         else {
             //para->C = cgp[i][0];

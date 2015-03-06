@@ -5,7 +5,7 @@
 #        Email: jlpeng1201@gmail.com
 #     HomePage: 
 #      Created: 2014-09-15 19:57:13
-#   LastChange: 2015-03-03 16:00:44
+#   LastChange: 2015-03-06 14:33:21
 #      History:
 =============================================================================*/
 #include <iostream>
@@ -391,6 +391,13 @@ double calcRSS(const vector<double> &actualY, const vector<PredictResult> &predi
     double val = 0.;
     for(vector<double>::size_type i=0; i<actualY.size(); ++i)
         val += pow(actualY[i]-predictY[i].y,2);
+    return val;
+}
+double calcRSS(const double *act, const double *pred, int n)
+{
+    double val = 0.;
+    for(int i=0; i<n; ++i)
+        val += pow(act[i]-pred[i],2);
     return val;
 }
 double calcRMSE(const vector<double> &actualY, const vector<double> &predictY)
