@@ -284,7 +284,6 @@ GridPara &GridPara::operator=(const GridPara &gp)
     return *this;
 }
 
-
 double grid_search(CV &cv, svm_parameter *para, int nfold, bool verbose, int sign,
         double (*eval)(const double *act, const double *pred, int n))
 {
