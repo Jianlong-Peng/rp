@@ -1,4 +1,4 @@
-GA_ROOT = /home/simmluo/users/jlpeng/lib/galib247
+GA_ROOT = /home/xmluo/jlpeng/program/ga-svm/galib247
 CFLAGS = -I$(GA_ROOT) -Wall -O2
 #CFLAGS = -I$(GA_ROOT) -Wall -g
 LDFLAGS = -L$(GA_ROOT)/ga -lga -lpthread
