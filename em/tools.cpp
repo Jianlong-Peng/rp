@@ -5,18 +5,26 @@
 #        Email: jlpeng1201@gmail.com
 #     HomePage: 
 #      Created: 2015-03-05 15:29:44
-#   LastChange: 2015-03-05 21:29:59
+#   LastChange: 2015-03-06 09:34:48
 #      History:
 =============================================================================*/
 #include <iostream>
 #include <cstdlib>
+#include <ctime>
 #include <vector>
+#include <algorithm>
 #include "tools.h"
 #include "../partition/tools.h"
 #include "../svm/svm.h"
 #include "../svm/svmtools.h"
 
-using namespace std;
+using std::vector;
+using std::copy;
+using std::cout;
+using std::endl;
+
+#define RAND ((rand()%11)/10.)
+#define RAND_DOUBLE(low, high)  ((high-low) * RAND + low)
 
 EM::EM(Sample &sample): _sample(sample)
 {
@@ -68,8 +76,9 @@ EM::EM(Sample &sample): _sample(sample)
     }
 }
 
-void EM::init(bool test_som)
+void EM::init(bool test_som, unsigned int seed)
 {
+    srand(seed);
     // fill _fraction
     _fraction.resize(_sample.count_total_num_atoms(),0.);
     int k = 0;
@@ -80,12 +89,12 @@ void EM::init(bool test_som)
         for(int j=0; j<_sample[i].num_atoms; ++j) {
             if(test_som) {
                 if(!_sample[i].som.empty() && _sample[i].som[j])
-                    temp = RANDOM(0.5,1.);
+                    temp = RAND_DOUBLE(0.5,1.);
                 else
-                    temp = RANDOM(0.,0.5);
+                    temp = RAND_DOUBLE(0.,0.5);
             }
             else
-                temp = RANDOM(0.,1.);
+                temp = RAND_DOUBLE(0.,1.);
             sum += temp;
             _fraction[k+j] = temp;
         }
@@ -125,7 +134,7 @@ static double calc_delta(const vector<double> &v1, const vector<double> &v2)
     double val = 0.;
     for(vector<double>::size_type i=0; i<v1.size(); ++i)
         val += abs(v1[i]-v2[i]);
-    val /= v1.size();
+    //val /= v1.size();
     return val;
 }
 static double calcRSS(const double *act, const double *pred, int n)
@@ -136,14 +145,15 @@ static double calcRSS(const double *act, const double *pred, int n)
     return val;
 }
 
-vector<svm_model*> train_models(vector<svm_problem*> &probs, svm_parameter *param)
+vector<svm_model*> EM::train_models()
 {
-    svm_parameter *para;
+    svm_parameter *para = create_svm_parameter();
     vector<svm_model*> models(probs.size(),NULL);
     for(vector<svm_problem*>::size_type i=0; i<probs.size(); ++i) {
-        grid_search(probs[i],param,5,false,-1,calcRSS);
-        models[i] = svm_train(probs[i],param);
+        grid_search(probs[i],para,5,false,-1,calcRSS);
+        models[i] = svm_train(probs[i],para);
     }
+    svm_destroy_param(para);
 }
 
 vector<double> EM::run(int epochs, double epsilon
@@ -152,11 +162,10 @@ vector<double> EM::run(int epochs, double epsilon
     vector<double> deltas;
     double delta(1E8);
     int iter(0);
-    svm_parameter *param = create_svm_parameter();
     
-    while(iter<epochs && delta<epsilon) {
+    while(iter<epochs && delta>epsilon) {
         self.fill_ys();
-        vector<svm_model*> models = train_models(_probs, param);
+        vector<svm_model*> models = self.train_models();
         vector<PredictResult> results = _sample.predict(models, true);
         vector<double> contrib = expectation(_sample, results);
         delta = calc_delta(_fraction, contrib);
@@ -167,14 +176,7 @@ vector<double> EM::run(int epochs, double epsilon
         ++iter;
     }
 
-    if(iter < epochs) {
-        cout << "Warning: maximum number of iterations reached" << endl
-            << "         delta=" << delta << endl;
-    }
-    else
-        cout << "EM done with #iter=" << iter << " and delta=" << delta << endl;
-
-    svm_destroy_param(param);
+    cout << "EM done with #iter=" << iter << " and delta=" << delta << endl;
 
     return deltas;
 }
