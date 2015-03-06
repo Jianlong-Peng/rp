@@ -2,7 +2,7 @@ GXX = cl.exe
 CFLAGS = /W3 /O2 /EHsc /MD /D "NDEBUG" /D "WIN32" /D"_CRT_SECURE_NO_WARNINGS" /nologo /fp:precise /Zc:wchar_t /Zc:forScope
 LDFLAGS = /INCREMENTAL:NO /SUBSYSTEM:CONSOLE
 
-all: svm.obj svmtools.obj test_grid.exe
+all: svm.obj svmtools.obj test_grid.exe grid_search.exe
 
 %.obj: %.cpp
 	@echo to build $@
@@ -12,3 +12,6 @@ test_grid.exe: test_grid.obj svmtools.obj svm.obj
 	@echo to build test_grid.exe
 	@link.exe $(LDFLAGS) svm.obj svmtools.obj test_grid.obj /OUT:test_grid.exe
 
+grid_search.exe: grid_search.obj svmtools.obj svm.obj
+	@echo to build grid_search.exe
+	@link.exe $(LDFLAGS) svm.obj svmtools.obj grid_search.obj /OUT:grid_search.exe

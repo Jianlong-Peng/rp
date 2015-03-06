@@ -5,13 +5,15 @@
 #        Email: jlpeng1201@gmail.com
 #     HomePage: 
 #      Created: 2015-03-05 20:37:09
-#   LastChange: 2015-03-06 12:48:54
+#   LastChange: 2015-03-06 16:38:15
 #      History:
 =============================================================================*/
 #include <iostream>
 #include <vector>
 #include <algorithm>
 #include <iterator>
+#include <string>
+#include <fstream>
 #include <cstdlib>
 #include <cstdarg>
 #include <cstring>
@@ -24,6 +26,8 @@ using std::endl;
 using std::vector;
 using std::copy;
 using std::ostream_iterator;
+using std::ifstream;
+using std::string;
 
 svm_parameter *create_svm_parameter(int svm_type, int kernel_type)
 {
@@ -47,12 +51,104 @@ svm_parameter *create_svm_parameter(int svm_type, int kernel_type)
     return para;
 }
 
-double svm_cv(const struct svm_problem *prob, const struct svm_parameter *para, int nfold,
-        double (*eval)(const double *act, const double *pred, int n))
+svm_problem *read_svm_problem(const char *infile)
+{
+    ifstream inf(infile);
+    if(!inf) {
+        cerr << "Error: failed to open " << infile << endl;
+        exit(EXIT_FAILURE);
+    }
+    svm_problem *prob = (svm_problem*)malloc(sizeof(svm_problem));
+    prob->l = 0;
+    int elements = 0;
+    string line;
+    while(getline(inf,line)) {
+        for(string::size_type i=0; i<line.size(); ++i) {
+            if(line[i]==' ' || line[i]=='\t')
+                ++elements;
+        }
+        ++elements;
+        prob->l++;
+    }
+    inf.close();
+
+    prob->y = (double*)malloc(sizeof(double)*(prob->l));
+    prob->x = (svm_node**)malloc(sizeof(svm_node*)*(prob->l));
+    svm_node *x_space = (svm_node*)malloc(sizeof(svm_node)*elements);
+
+    ifstream inf2(infile);
+    int k=0,l=0;
+    string::size_type i,j,z;
+    while(getline(inf2,line)) {
+        i = line.find_first_of(" \t");
+        prob->y[l] = atof(line.substr(0,i).c_str());
+        prob->x[l] = &x_space[k];
+        ++i;
+        while(true) {
+            j = line.find_first_of(" \t",i);
+            z = line.find_first_of(":",i);
+            x_space[k].index = atoi(line.substr(i,z-i).c_str());
+            if(j == string::npos) {
+                x_space[k].value = atof(line.substr(z+1).c_str());
+                break;
+            }
+            else {
+                x_space[k].value = atof(line.substr(z+1,j-z-1).c_str());
+                i = j+1;
+            }
+            ++k;
+        }
+        x_space[k].index = -1;
+        ++k;
+        ++l;
+    }
+    inf2.close();
+
+    return prob;
+}
+
+void free_svm_problem(svm_problem *prob)
+{
+    if(prob == NULL)
+        return;
+    if(prob->y)
+        free(prob->y);
+    if(prob->x) {
+        free(prob->x[0]);
+        free(prob->x);
+    }
+    free(prob); 
+}
+
+CV::CV(const svm_problem *prob1): prob(prob1)
+{
+    perm = (int*)malloc(sizeof(int)*(prob->l));
+    for(int i=0; i<prob->l; ++i)
+        perm[i] = i;
+}
+
+CV::CV(const CV &cv): prob(cv.prob)
+{
+    this->perm = (int*)malloc(sizeof(int)*(this->prob->l));
+    memcpy(this->perm, cv.perm, sizeof(int)*(this->prob->l));
+}
+
+CV &CV::operator=(const CV &cv)
+{
+    if(this == &cv)
+        return *this;
+    if(this->perm)
+        free(this->perm);
+    this->prob = cv.prob;
+    this->perm = (int*)malloc(sizeof(int)*(this->prob->l));
+    memcpy(this->perm, cv.perm, sizeof(int)*(this->prob->l));
+    return *this;
+}
+
+double *CV::run(int nfold, const svm_parameter *para)
 {
     int i,j,begin, end;
     int total = prob->l;
-    double value;
     int *fold_start = (int*)malloc(sizeof(int)*(nfold+1));
     double *predictY = (double*)malloc(sizeof(double)*total);
     struct svm_problem *train = (struct svm_problem*)malloc(sizeof(struct svm_problem));
@@ -68,31 +164,58 @@ double svm_cv(const struct svm_problem *prob, const struct svm_parameter *para, 
         end = fold_start[i+1];
         train->l = 0;
         for(j=0; j<begin; ++j) { // train
-            train->y[train->l] = prob->y[j];
-            train->x[train->l] = prob->x[j];
+            train->y[train->l] = prob->y[perm[j]];
+            train->x[train->l] = prob->x[perm[j]];
             train->l++;
         }
         for(j=end; j<total; ++j) { // train
-            train->y[train->l] = prob->y[j];
-            train->x[train->l] = prob->x[j];
+            train->y[train->l] = prob->y[perm[j]];
+            train->x[train->l] = prob->x[perm[j]];
             train->l++;
         }
-        //printf("\ntraining set of %dth-fold:\n",i);
-        //display_svm_problem(train);
         // train and predict
         model = svm_train(train,para);
         for(j=begin; j<end; ++j)
-            predictY[j] = svm_predict(model,prob->x[j]);
+            predictY[perm[j]] = svm_predict(model,prob->x[perm[j]]);
         svm_free_and_destroy_model(&model);
     }
-    value = eval(prob->y, predictY, prob->l);
     free(fold_start);
-    free(predictY);
     free(train->y);
     free(train->x);
     free(train);
-    return value;
+    return predictY;
 }
+
+double CV::run(int nfold, const svm_parameter *para,
+        double (*eval)(const double *act, const double *pred, int n))
+{
+    double *target = this->run(nfold, para);
+    double val = eval(prob->y, target, prob->l);
+    free(target);
+    return val;
+}
+
+CV::~CV()
+{
+    if(perm)
+        free(perm);
+}
+
+void RandCV::split()
+{
+    for(int i=0; i<prob->l; ++i) {
+        int j = rand()%(prob->l - i);
+        int temp = perm[i];
+        perm[i] = perm[j];
+        perm[j] = temp;
+    }
+}
+
+void StratifyCV::split()
+{
+    cout << "to be implemented" << endl;
+}
+
 
 GridPara::GridPara(const vector<vector<int> > &r): range(r), index(vector<int>(r.size()))
 {
@@ -126,7 +249,6 @@ GridPara::GridPara(int n, ...): range(vector<vector<int> >(n/3, vector<int>(3)))
 
 GridPara::GridPara(const GridPara &gp)
 {
-    (this->range).clear();
     for(vector<vector<int> >::size_type i=0; i<gp.range.size(); ++i)
         (this->range).push_back(gp.range[i]);
     this->index = vector<int>(gp.index.begin(),gp.index.end());
@@ -161,14 +283,12 @@ GridPara &GridPara::operator=(const GridPara &gp)
 }
 
 
-double grid_search(svm_problem *prob, svm_parameter *para, 
-        int nfold, bool verbose, int sign,
+double grid_search(CV &cv, svm_parameter *para, int nfold, bool verbose, int sign,
         double (*eval)(const double *act, const double *pred, int n))
 {
     double best_eval = (sign>0)?DBL_MIN:DBL_MAX;
     double curr_eval;
     double best_c=para->C, best_g=para->gamma, best_p=para->p;
-    //double *target = (double*)malloc(sizeof(double)*(prob->l));
     GridPara *gp(NULL);
     if(para->svm_type == EPSILON_SVR)
         gp = new GridPara(9,-8,8,1,-8,8,1,1,5,1);
@@ -177,30 +297,34 @@ double grid_search(svm_problem *prob, svm_parameter *para,
     while(gp->next()) {
         para->C = pow(2.0, gp->index[0]);
         para->gamma = pow(2.0, gp->index[1]);
-        para->p = 0.05 * gp->index[2];
-        //svm_cross_validation(prob,para,nfold,target);
-        //curr_eval = eval(prob->y,target,prob->l);
-        curr_eval = svm_cv(prob,para,nfold,eval);
+        if(para->svm_type == EPSILON_SVR)
+            para->p = 0.05 * gp->index[2];
+        curr_eval = cv.run(nfold, para, eval);
         if(verbose) {
-            cout << "check c=" << para->C << ", g=" << para->gamma << ", p=" << para->p 
-                << " => eval=" << curr_eval << endl;
+            cout << "check c=" << para->C << ", g=" << para->gamma;
+            if(para->svm_type == EPSILON_SVR)
+                cout << ", p=" << para->p;
+            cout << " => eval=" << curr_eval << endl;
         }
         if((curr_eval - best_eval)*sign > 0) {
             best_c = para->C;
             best_g = para->gamma;
-            best_p = para->p;
+            if(para->svm_type == EPSILON_SVR)
+                best_p = para->p;
             best_eval = curr_eval;
         }
     }
 
     para->C = best_c;
     para->gamma = best_g;
-    para->p = best_p;
+    if(para->svm_type == EPSILON_SVR)
+        para->p = best_p;
     if(verbose) {
-        cout << "check c=" << para->C << ", g=" << para->gamma << ", p=" << para->p 
-            << " => eval=" << best_eval << endl;
+        cout << "BEST c=" << para->C << ", g=" << para->gamma;
+        if(para->svm_type == EPSILON_SVR)
+            cout << ", p=" << para->p;
+        cout << " => eval=" << best_eval << endl;
     }
-    //free(target);
     delete gp;
     return best_eval;
 }
