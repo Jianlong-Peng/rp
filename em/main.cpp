@@ -22,6 +22,7 @@
 using namespace std;
 
 vector<double> (*expectation)(const Sample&, vector<PredictResult>&);
+void print_null(const char *s) {}
 
 int main(int argc, char *argv[])
 {
@@ -83,6 +84,9 @@ int main(int argc, char *argv[])
         case 1: expectation = expectation_rescale; break;
         default: cerr << "Error: inappropriate `--estep " << estep << "`" << endl; exit(EXIT_FAILURE);
     }
+
+    svm_set_print_string_function(print_null);
+    srand(time(NULL));
 
     Sample sample;
     sample.read_problem(train_file, som_file);

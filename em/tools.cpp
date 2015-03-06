@@ -61,7 +61,7 @@ EM::EM(Sample &sample): _sample(sample)
         _probs[i]->l = 0;
         _probs[i]->y = (double*)malloc(sizeof(double)*(num_each_sample[i]));
         _probs[i]->x = (struct svm_node**)malloc(sizeof(struct svm_node*)*(num_each_sample[i]));
-        for(int j=0; j<num_each_sample[i]; ++i)
+        for(int j=0; j<num_each_sample[i]; ++j)
             _probs[i]->x[j] = (struct svm_node*)malloc(sizeof(struct svm_node)*(num_xs[i]+1));
     }
 
@@ -152,7 +152,7 @@ vector<svm_model*> EM::train_models()
         models[i] = svm_train(_probs[i],para);
     }
     svm_destroy_param(para);
-	return models;
+    return models;
 }
 
 void EM::run(int epochs, double epsilon, bool verbose,
