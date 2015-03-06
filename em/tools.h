@@ -14,7 +14,7 @@
 #include <ctime>
 #include <vector>
 #include "../partition/tools.h"
-#include "../partition/svm.h"
+#include "../svm/svm.h"
 
 class EM
 {

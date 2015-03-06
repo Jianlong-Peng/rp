@@ -5,14 +5,16 @@
 #        Email: jlpeng1201@gmail.com
 #     HomePage: 
 #      Created: 2015-03-05 15:29:44
-#   LastChange: 2015-03-06 16:56:06
+#   LastChange: 2015-03-06 11:16:25
 #      History:
 =============================================================================*/
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
+#include <cmath>
 #include <vector>
 #include <algorithm>
+#include <iterator>
 #include "tools.h"
 #include "../partition/tools.h"
 #include "../svm/svm.h"
@@ -21,7 +23,9 @@
 using std::vector;
 using std::copy;
 using std::cout;
+using std::cerr;
 using std::endl;
+using std::ostream_iterator;
 
 #define RAND ((rand()%11)/10.)
 #define RAND_DOUBLE(low, high)  ((high-low) * RAND + low)
@@ -34,7 +38,7 @@ EM::EM(Sample &sample): _sample(sample)
             num_types = (_sample[i].atom_type[j]>num_types)?(_sample[i].atom_type[j]):num_types;
     num_types += 1;
     vector<int> num_xs(num_types, 0);
-    vector<int> num_each_sample.resize(num_types, 0);
+    vector<int> num_each_sample(num_types, 0);
     for(int i=0; i<_sample.num_samples(); ++i) {
         for(int j=0; j<_sample[i].num_atoms; ++j) {
             int _type = _sample[i].atom_type[j];
@@ -129,7 +133,7 @@ void EM::fill_ys()
     }
 }
 
-static double calc_delta(const vector<double> &v1, const vector<double> &v2)
+static double em_calc_delta(const vector<double> &v1, const vector<double> &v2)
 {
     double val = 0.;
     for(vector<double>::size_type i=0; i<v1.size(); ++i)
@@ -137,24 +141,18 @@ static double calc_delta(const vector<double> &v1, const vector<double> &v2)
     //val /= v1.size();
     return val;
 }
-static double calcRSS(const double *act, const double *pred, int n)
-{
-    double val = 0.;
-    for(int i=0; i<n; ++i)
-        val += pow(act[i]-pred[i],2);
-    return val;
-}
 
 vector<svm_model*> EM::train_models()
 {
     svm_parameter *para = create_svm_parameter();
-    vector<svm_model*> models(probs.size(),NULL);
-    for(vector<svm_problem*>::size_type i=0; i<probs.size(); ++i) {
-        CV cv(probs[i]);
+    vector<svm_model*> models(_probs.size(),NULL);
+    for(vector<svm_problem*>::size_type i=0; i<_probs.size(); ++i) {
+        CV cv(_probs[i]);
         grid_search(cv, para, 5, false, -1, calcRSS);
-        models[i] = svm_train(probs[i],para);
+        models[i] = svm_train(_probs[i],para);
     }
     svm_destroy_param(para);
+	return models;
 }
 
 void EM::run(int epochs, double epsilon, bool verbose,
@@ -165,11 +163,11 @@ void EM::run(int epochs, double epsilon, bool verbose,
     int iter(0);
     
     while(iter<epochs && delta>epsilon) {
-        self.fill_ys();
-        vector<svm_model*> models = self.train_models();
+        this->fill_ys();
+        vector<svm_model*> models = this->train_models();
         vector<PredictResult> results = _sample.predict(models, true);
         vector<double> contrib = expectation(_sample, results);
-        delta = calc_delta(_fraction, contrib);
+        delta = em_calc_delta(_fraction, contrib);
         if(verbose) {
             cout << delta << " ";
             copy(contrib.begin(),contrib.end(),ostream_iterator<double>(cout," "));
@@ -187,9 +185,9 @@ void EM::run(int epochs, double epsilon, bool verbose,
     //return deltas;
 }
 
-EM::~EM(Sample &sample)
+EM::~EM()
 {
-    for(vector<svm_problem*>::size_type i=0; i<_prob.size(); ++i) {
+    for(vector<svm_problem*>::size_type i=0; i<_probs.size(); ++i) {
         free(_probs[i]->y);
         for(int j=0; j<_probs[i]->l; ++j)
             free(_probs[i]->x[j]);
@@ -202,7 +200,7 @@ EM::~EM(Sample &sample)
 vector<double> expectation_rescale(const Sample &sample, vector<PredictResult> &result)
 {
     vector<double> contrib(sample.count_total_num_atoms());
-    int k;
+    int k=0;
     for(vector<PredictResult>::size_type i=0; i<result.size(); ++i) {
         for(vector<double>::size_type j=0; j<result[i].each_y.size(); ++j)
             contrib[k++] = pow(10, result[i].each_y[j]) / pow(10, result[i].y);

@@ -17,6 +17,8 @@
 #include <cstdlib>
 #include <cstdarg>
 #include <cstring>
+#include <cfloat>
+#include <cmath>
 #include "svm.h"
 #include "svmtools.h"
 

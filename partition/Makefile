@@ -25,13 +25,13 @@ ga_partition: $(OBJS) operators.o main.o extern_tools.o
 gap: ga_partition
 	ln -s ga_partition gap
 
-gap_train: $(OBJS) gap_train.o
+gap_train: $(OBJS) ../svm/svmtools.o gap_train.o
 	@echo to build gap_train
-	@g++ $(OBJS) gap_train.o -o gap_train
+	@g++ $(OBJS) ../svm/svmtools.o gap_train.o -o gap_train
 
-gap_train_p: $(OBJS) gap_train_p.o
+gap_train_p: $(OBJS) ../svm/svmtools.o gap_train_p.o
 	@echo to build gap_train_p
-	@g++ $(OBJS) gap_train_p.o -o gap_train_p -lpthread
+	@g++ $(OBJS) ../svm/svmtools.o gap_train_p.o -o gap_train_p -lpthread
 
 gap_predict: $(OBJS) gap_predict.o
 	@echo to build gap_predict

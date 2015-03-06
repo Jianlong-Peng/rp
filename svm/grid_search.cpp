@@ -14,6 +14,8 @@
 #include <iterator>
 #include <cstdlib>
 #include <ctime>
+#include <cmath>
+#include <cstring>
 #include "svm.h"
 #include "svmtools.h"
 

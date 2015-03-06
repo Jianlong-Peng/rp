@@ -5,13 +5,16 @@
 #        Email: jlpeng1201@gmail.com
 #     HomePage: 
 #      Created: 2015-03-06 14:01:30
-#   LastChange: 2015-03-06 14:28:53
+#   LastChange: 2015-03-06 11:22:54
 #      History:
 =============================================================================*/
 #include <iostream>
 #include <vector>
 #include <fstream>
+#include <iterator>
+#include <algorithm>
 #include <cstdlib>
+#include <cstring>
 #include "tools.h"
 #include "../svm/svm.h"
 #include "../partition/tools.h"
@@ -44,7 +47,7 @@ int main(int argc, char *argv[])
     string train_file("");
     string som_file("");
     string out_file("");
-    int estep, epoch;
+    int estep(1), epoch(100);
     bool test_som(false);
     int i;
     for(i=1; i<argc; ++i) {
@@ -85,22 +88,27 @@ int main(int argc, char *argv[])
     sample.read_problem(train_file, som_file);
     EM em(sample);
     em.init(test_som);
-    em.run(epoch, epsilon, true, expectation);
+    em.run(epoch, 1E-3, true, expectation);
 
-    ostream os(cout);
-    if(!out_file.empty()) {
+    vector<double> &contrib = em.get_fraction();
+    if(out_file.empty()) {
+        copy(contrib.begin(), contrib.end(), ostream_iterator<double>(cout," "));
+        cout << endl;
+    }
+    else {
         ofstream outf(out_file.c_str());
         if(!outf) {
             cerr << "Warning: failed to open " << out_file << endl
                 << "         atom contribution will be displayed in the screen" << endl;
-            os = cout;
+            copy(contrib.begin(), contrib.end(), ostream_iterator<double>(cout," "));
+            cout << endl;
         }
-        else
-            os = outf;
+        else {
+            copy(contrib.begin(), contrib.end(), ostream_iterator<double>(outf," "));
+            outf << endl;
+            outf.close();
+        }
     }
-    vector<double> contrib = em.get_fraction();
-    copy(contrib.begin(),contrib.end(),ostream_iterator<double>(os," "));
-    os << endl;
     
     return 0;
 }
