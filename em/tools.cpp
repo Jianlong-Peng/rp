@@ -5,13 +5,14 @@
 #        Email: jlpeng1201@gmail.com
 #     HomePage: 
 #      Created: 2015-03-05 15:29:44
-#   LastChange: 2015-03-06 11:16:25
+#   LastChange: 2015-03-06 12:27:39
 #      History:
 =============================================================================*/
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
 #include <cmath>
+#include <cstring>
 #include <vector>
 #include <algorithm>
 #include <iterator>
@@ -19,6 +20,9 @@
 #include "../partition/tools.h"
 #include "../svm/svm.h"
 #include "../svm/svmtools.h"
+#ifdef NTHREAD
+#include <pthread.h>
+#endif
 
 using std::vector;
 using std::copy;
@@ -142,6 +146,41 @@ static double em_calc_delta(const vector<double> &v1, const vector<double> &v2)
     return val;
 }
 
+#ifdef NTHREAD
+
+void* em_train_each(void *arg)
+{
+	const svm_problem *prob = (const svm_problem*)arg;
+	svm_parameter *para = create_svm_parameter();
+	CV cv(prob);
+	grid_search(cv, para, 5, false, -1, calcRSS);
+	svm_model *model = svm_train(prob, para);
+	svm_destroy_param(para);
+	pthread_exit((void*)model);
+}
+vector<svm_model*> EM::train_models()
+{
+	int n = static_cast<int>(_probs.size());
+	vector<svm_model*> models(n,NULL);
+
+	pthread_t *thread = (pthread_t*)malloc(sizeof(pthread_t)*n);
+	memset(thread, 0, sizeof(pthread_t)*n);
+	for(int i=0; i<n; ++i) {
+		int retval = pthread_create(&thread[i], NULL, em_train_each, _probs[i]);
+		if(retval)
+			cerr << "Error: failed to create thread " << i+1 << endl;
+	}
+	for(int i=0; i<n; ++i) {
+		int retval = pthread_join(thread[i], (void**)(&models[i]));
+		if(retval)
+				cerr << "Error: failed to join thread " << i+1 << endl;
+	}
+	free(thread);
+
+	return models;
+}
+
+#else
 vector<svm_model*> EM::train_models()
 {
     svm_parameter *para = create_svm_parameter();
@@ -154,6 +193,7 @@ vector<svm_model*> EM::train_models()
     svm_destroy_param(para);
     return models;
 }
+#endif
 
 void EM::run(int epochs, double epsilon, bool verbose,
         vector<double> expectation(const Sample&, vector<PredictResult>&))

@@ -41,6 +41,10 @@ int main(int argc, char *argv[])
             << "    1 - just rescale, contribution f_ij = y_ij / sum_j{y_ij}" << endl
             << "  --epoch  int: <default: 100>" << endl
             << "    to specify number of e- and m-step" << endl
+#ifdef NTHREAD
+			<< endl << "Attention" << endl
+			<< "  1. this is multi-thread version" << endl
+#endif
             << endl;
         exit(EXIT_FAILURE);
     }
