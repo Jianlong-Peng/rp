@@ -5,7 +5,7 @@
 #        Email: jlpeng1201@gmail.com
 #     HomePage: 
 #      Created: 2015-03-05 15:29:44
-#   LastChange: 2015-03-06 09:34:48
+#   LastChange: 2015-03-06 16:56:06
 #      History:
 =============================================================================*/
 #include <iostream>
@@ -150,16 +150,17 @@ vector<svm_model*> EM::train_models()
     svm_parameter *para = create_svm_parameter();
     vector<svm_model*> models(probs.size(),NULL);
     for(vector<svm_problem*>::size_type i=0; i<probs.size(); ++i) {
-        grid_search(probs[i],para,5,false,-1,calcRSS);
+        CV cv(probs[i]);
+        grid_search(cv, para, 5, false, -1, calcRSS);
         models[i] = svm_train(probs[i],para);
     }
     svm_destroy_param(para);
 }
 
-vector<double> EM::run(int epochs, double epsilon
+void EM::run(int epochs, double epsilon, bool verbose,
         vector<double> expectation(const Sample&, vector<PredictResult>&))
 {
-    vector<double> deltas;
+    //vector<double> deltas;
     double delta(1E8);
     int iter(0);
     
@@ -169,7 +170,12 @@ vector<double> EM::run(int epochs, double epsilon
         vector<PredictResult> results = _sample.predict(models, true);
         vector<double> contrib = expectation(_sample, results);
         delta = calc_delta(_fraction, contrib);
-        deltas.push_back(delta);
+        if(verbose) {
+            cout << delta << " ";
+            copy(contrib.begin(),contrib.end(),ostream_iterator<double>(cout," "));
+            cout << endl;
+        }
+        //deltas.push_back(delta);
         for(vector<svm_model*>::size_type i=0; i<models.size(); ++i)
             svm_free_and_destroy_model(&models[i]);
         copy(contrib.begin(), contrib.end(), _fraction.begin());
@@ -178,7 +184,7 @@ vector<double> EM::run(int epochs, double epsilon
 
     cout << "EM done with #iter=" << iter << " and delta=" << delta << endl;
 
-    return deltas;
+    //return deltas;
 }
 
 EM::~EM(Sample &sample)
@@ -192,4 +198,16 @@ EM::~EM(Sample &sample)
     }
     _probs.clear();
 }
+
+vector<double> expectation_rescale(const Sample &sample, vector<PredictResult> &result)
+{
+    vector<double> contrib(sample.count_total_num_atoms());
+    int k;
+    for(vector<PredictResult>::size_type i=0; i<result.size(); ++i) {
+        for(vector<double>::size_type j=0; j<result[i].each_y.size(); ++j)
+            contrib[k++] = pow(10, result[i].each_y[j]) / pow(10, result[i].y);
+    }
+    return contrib;
+}
+
 

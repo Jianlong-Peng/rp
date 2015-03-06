@@ -5,7 +5,7 @@
 #        Email: jlpeng1201@gmail.com
 #     HomePage: 
 #      Created: 2015-03-05 15:18:35
-#   LastChange: 2015-03-06 09:36:02
+#   LastChange: 2015-03-06 14:26:16
 #      History:
 =============================================================================*/
 #ifndef  EM_TOOLS_H
@@ -23,8 +23,8 @@ public:
     // randomly fill `_fraction`
     // if `test_som` is true, then SOM sites will be given a relatively larger value.
     void init(bool test_som, unsigned int seed=time(NULL));
-    // return: vector of deltas
-    std::vector<double> run(int epochs, double epsilon,
+    // if verbose is true, `delta` and `contrib` of each iteration will be displayed.
+    void run(int epochs, double epsilon, bool verbose,
             std::vector<double> expectation(const Sample&, std::vector<PredictResult>&));
     vector<double> &get_fraction() {return _fraction;}
     const vector<double> &get_fraction() const {return _fraction;}
@@ -40,6 +40,7 @@ private:
     std::vector<double> _fraction;
 };
 
+std::vector<double> expectation_rescale(const Sample&, std::vector<PredictResult>&);
 
 #endif   /* ----- #ifndef EM_TOOLS_H  ----- */
 
