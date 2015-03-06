@@ -5,7 +5,7 @@
 #        Email: jlpeng1201@gmail.com
 #     HomePage: 
 #      Created: 2015-03-05 15:29:44
-#   LastChange: 2015-03-06 12:27:39
+#   LastChange: 2015-03-07 02:21:23
 #      History:
 =============================================================================*/
 #include <iostream>
@@ -141,7 +141,7 @@ static double em_calc_delta(const vector<double> &v1, const vector<double> &v2)
 {
     double val = 0.;
     for(vector<double>::size_type i=0; i<v1.size(); ++i)
-        val += abs(v1[i]-v2[i]);
+        val += fabs(v1[i]-v2[i]);
     //val /= v1.size();
     return val;
 }
@@ -150,34 +150,34 @@ static double em_calc_delta(const vector<double> &v1, const vector<double> &v2)
 
 void* em_train_each(void *arg)
 {
-	const svm_problem *prob = (const svm_problem*)arg;
-	svm_parameter *para = create_svm_parameter();
-	CV cv(prob);
-	grid_search(cv, para, 5, false, -1, calcRSS);
-	svm_model *model = svm_train(prob, para);
-	svm_destroy_param(para);
-	pthread_exit((void*)model);
+    const svm_problem *prob = (const svm_problem*)arg;
+    svm_parameter *para = create_svm_parameter();
+    CV cv(prob);
+    grid_search(cv, para, 5, false, -1, calcRSS);
+    svm_model *model = svm_train(prob, para);
+    svm_destroy_param(para);
+    pthread_exit((void*)model);
 }
 vector<svm_model*> EM::train_models()
 {
-	int n = static_cast<int>(_probs.size());
-	vector<svm_model*> models(n,NULL);
+    int n = static_cast<int>(_probs.size());
+    vector<svm_model*> models(n,NULL);
 
-	pthread_t *thread = (pthread_t*)malloc(sizeof(pthread_t)*n);
-	memset(thread, 0, sizeof(pthread_t)*n);
-	for(int i=0; i<n; ++i) {
-		int retval = pthread_create(&thread[i], NULL, em_train_each, _probs[i]);
-		if(retval)
-			cerr << "Error: failed to create thread " << i+1 << endl;
-	}
-	for(int i=0; i<n; ++i) {
-		int retval = pthread_join(thread[i], (void**)(&models[i]));
-		if(retval)
-				cerr << "Error: failed to join thread " << i+1 << endl;
-	}
-	free(thread);
+    pthread_t *thread = (pthread_t*)malloc(sizeof(pthread_t)*n);
+    memset(thread, 0, sizeof(pthread_t)*n);
+    for(int i=0; i<n; ++i) {
+        int retval = pthread_create(&thread[i], NULL, em_train_each, _probs[i]);
+        if(retval)
+            cerr << "Error: failed to create thread " << i+1 << endl;
+    }
+    for(int i=0; i<n; ++i) {
+        int retval = pthread_join(thread[i], (void**)(&models[i]));
+        if(retval)
+                cerr << "Error: failed to join thread " << i+1 << endl;
+    }
+    free(thread);
 
-	return models;
+    return models;
 }
 
 #else
@@ -209,7 +209,10 @@ void EM::run(int epochs, double epsilon, bool verbose,
         vector<double> contrib = expectation(_sample, results);
         delta = em_calc_delta(_fraction, contrib);
         if(verbose) {
-            cout << delta << " ";
+            cout << "#iter=" << iter+1 << "; delta=" << delta << endl;
+            cout << "_fraction: ";
+            copy(_fraction.begin(),_fraction.end(),ostream_iterator<double>(cout," "));
+            cout << endl << "contrib: ";
             copy(contrib.begin(),contrib.end(),ostream_iterator<double>(cout," "));
             cout << endl;
         }
