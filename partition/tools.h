@@ -5,7 +5,7 @@
 #        Email: jlpeng1201@gmail.com
 #     HomePage: 
 #      Created: 2014-09-15 19:50:31
-#   LastChange: 2014-10-31 15:57:25
+#   LastChange: 2015-03-06 14:32:52
 #      History:
 =============================================================================*/
 
@@ -87,6 +87,7 @@ private:
 double calcAUC(const vector<bool> &labels, const vector<double> &ys);
 double calcRSS(const vector<double> &actualY, const vector<double> &predictY);
 double calcRSS(const vector<double> &actualY, const vector<PredictResult> &predictY);
+double calcRSS(const double *act, const double *pred, int n);
 double calcRMSE(const vector<double> &actualY, const vector<double> &predictY);
 double calcRMSE(const vector<double> &actualY, const vector<PredictResult> &predictY);
 double calcR(const vector<double> &actualY, const vector<double> &predictY);
