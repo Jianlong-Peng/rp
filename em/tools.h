@@ -28,6 +28,8 @@ public:
             std::vector<double> expectation(const Sample&, std::vector<PredictResult>&));
     vector<double> &get_fraction() {return _fraction;}
     const vector<double> &get_fraction() const {return _fraction;}
+    vector<double> &get_cgp() {return _cgp;}
+    const vector<double> &get_cgp() const {return _cgp;}
     ~EM();
 private:
     // assign `_fraction` to `_probs`
@@ -37,7 +39,8 @@ private:
 private:
     Sample &_sample;
     std::vector<svm_problem*> _probs;
-    std::vector<double> _fraction;
+    std::vector<double> _fraction;   // atom contribution (percentage)
+    std::vector<double> _cgp;        // C,gamma,p for svm models
 };
 
 std::vector<double> expectation_rescale(const Sample&, std::vector<PredictResult>&);

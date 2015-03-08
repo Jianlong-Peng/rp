@@ -214,11 +214,17 @@ void EM::run(int epochs, double epsilon, bool verbose,
             copy(_fraction.begin(),_fraction.end(),ostream_iterator<double>(cout," "));
             cout << endl << "contrib: ";
             copy(contrib.begin(),contrib.end(),ostream_iterator<double>(cout," "));
+            for(vector<svm_model*>::size_type i=0; i<models.size(); ++i)
+                cout << " " << models[i]->param.C << " " << models[i]->param.gamma << " " << models[i]->param.p;
             cout << endl;
         }
         //deltas.push_back(delta);
-        for(vector<svm_model*>::size_type i=0; i<models.size(); ++i)
+        for(vector<svm_model*>::size_type i=0; i<models.size(); ++i) {
+            _cgp.push_back(models[i]->param.C);
+            _cgp.push_back(models[i]->param.gamma);
+            _cgp.push_back(models[i]->param.p);
             svm_free_and_destroy_model(&models[i]);
+        }
         copy(contrib.begin(), contrib.end(), _fraction.begin());
         ++iter;
     }

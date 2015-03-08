@@ -104,8 +104,10 @@ int main(int argc, char *argv[])
     em.run(epoch, 1E-3, true, expectation);
 
     vector<double> &contrib = em.get_fraction();
+    vector<double> &cgp = em.get_cgp();
     if(out_file.empty()) {
         copy(contrib.begin(), contrib.end(), ostream_iterator<double>(cout," "));
+        copy(cgp.begin(), cgp.end(), ostream_iterator<double>(cout, " "));
         cout << endl;
     }
     else {
@@ -114,10 +116,12 @@ int main(int argc, char *argv[])
             cerr << "Warning: failed to open " << out_file << endl
                 << "         atom contribution will be displayed in the screen" << endl;
             copy(contrib.begin(), contrib.end(), ostream_iterator<double>(cout," "));
+            copy(cgp.begin(), cgp.end(), ostream_iterator<double>(cout, " "));
             cout << endl;
         }
         else {
             copy(contrib.begin(), contrib.end(), ostream_iterator<double>(outf," "));
+            copy(cgp.begin(), cgp.end(), ostream_iterator<double>(outf, " "));
             outf << endl;
             outf.close();
         }
