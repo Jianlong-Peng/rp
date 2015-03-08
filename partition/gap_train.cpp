@@ -108,6 +108,11 @@ int main(int argc, char *argv[])
     //read_train_partition(argv[i+1], partition);
     read_train_partition(argv[i+1], train_set.count_total_num_atoms());
 
+    if(cgp.empty() && !do_search) {
+        cout << "Warning: cgp is not specified, do grid_search" << endl;
+        do_search = true;
+    }
+
     // create svm_problems
     //create_svm_problems(train_set, partition);
     create_svm_problems(train_set, population);
