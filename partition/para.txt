@@ -41,7 +41,7 @@ obj_type 0110
 
 belta 2
 
-wx2 20
+wx2 5
 
 #if do_log == 0, then models will be trained based on y instead of log10(y)
 do_log 1

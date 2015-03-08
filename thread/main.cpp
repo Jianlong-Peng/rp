@@ -57,7 +57,7 @@ bool calc_iap(false);
 bool calc_consistency(false);
 bool calc_x2(false);
 double belta(1);
-double wx2(20);
+double wx2(5);
 bool do_log(true);
 
 int kernel_type(0);
@@ -293,6 +293,7 @@ void parse_args(const char *infile)
         << "  calc_consistency: " << (calc_consistency?"TRUE":"FALSE") << endl
         << "  calc_x2: " << (calc_x2?"TRUE":"FALSE") << endl
         << "belta: " << belta << endl
+        << "wx2: " << wx2 << endl
         << "do_log: " << (do_log?"TRUE":"FALSE") << endl
         << "repeat: " << repeat << endl
         << "nthread: " << nthread << endl;

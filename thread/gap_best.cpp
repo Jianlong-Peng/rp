@@ -103,7 +103,8 @@ int main(int argc, char *argv[])
         << "nthread: " << nthread << endl
         << "nfolds: " << nfolds << endl
         << "repeat: " << repeat << endl
-        << "belta: " << belta << endl;
+        << "belta: " << belta << endl
+        << "wx2: " << wx2 << endl;
 
     load_population();
     cout << "genomes.size(): " << genomes.size() << endl;
