@@ -29,14 +29,15 @@ operator_type 2
 #           obj function 2 and 4 are no longer supported!!!!!!
 #obj_type 1
 #
-#obj_type should be a string of length 3
+#obj_type should be a string of length <=4
 #fitness will be 1/mean(RSS) + mean(AUC(xi)) + mean(IAP) + belta * {1/mean(consistency)}
 #where, belta = [1,10]
 #obj_type[0]: mean(AUC(xi)),  where AUC(xi) to estimate whether the atom contribution is compatible to experimentally observed SOMs
 #obj_type[1]: mean(IAP)
 #obj_type[2]: 1/mean(consistency), where consistency = mean((predict_atom_contribution - partititon)^2)
-#therefore, if obj_type=100, then fitness = 1/mean(RSS) + mean(AUC)
-obj_type 011
+#obj_type[3]: mean(x^2),  to estimate the distribution of a molecule's atom contribution
+#therefore, if obj_type=1000, then fitness = 1/mean(RSS) + mean(AUC)
+obj_type 0110
 
 belta 2
 

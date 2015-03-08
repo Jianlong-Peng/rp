@@ -58,6 +58,7 @@ extern vector<bool> is_som;
 extern bool calc_auc;
 extern bool calc_iap;
 extern bool calc_consistency;
+extern bool calc_x2;
 extern double belta;
 extern bool do_log;
 
@@ -569,7 +570,7 @@ static float obj_func(vector<double> &actualY, vector<PredictResult> &predictY)
 {
     int n = STA_CAST(int, actualY.size());
     double mrss = calcRSS(actualY, predictY) / n;
-    double mauc=0., miap=0., mdelta=0.;
+    double mauc=0., miap=0., mdelta=0., mean_x2=0.;
     // `calc_auc` and `calc_iap` are both for estimating if the predicted value
     // is consistent to the observed SOMs
     if(calc_auc) {
@@ -599,11 +600,23 @@ static float obj_func(vector<double> &actualY, vector<PredictResult> &predictY)
         }
         mdelta /= k;
     }
+    if(calc_x2) {
+        int k=0;
+        for(vector<PredictResult>::size_type i=0; i<predictY.size(); ++i) {
+            double val = 0.;
+            for(vector<double>::size_type j=0; j<predictY[i].each_y.size(); ++j) {
+                val += pow(population[k],2);
+                ++k;
+            }
+            mean_x2 += val;
+        }
+        mean_x2 /= predictY.size();
+    }
     if(mrss < 1e-3)
         mrss = 1e-3;
     if(mdelta < 1e-3)
         mdelta = 1e-3;
-    return STA_CAST(float, 1./mrss+mauc+miap+belta*1./mdelta);
+    return STA_CAST(float, 1./mrss+mauc+miap+belta*1./mdelta+10.*mean_x2);
 }
 
 static void *doCV(void *arg)

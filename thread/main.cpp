@@ -55,6 +55,7 @@ int nthread(1);
 bool calc_auc(false);
 bool calc_iap(false);
 bool calc_consistency(false);
+bool calc_x2(false);
 double belta(1);
 bool do_log(true);
 
@@ -226,6 +227,8 @@ void parse_args(const char *infile)
                 calc_iap = true;
             if(obj_type[2] == '1')
                 calc_consistency = true;
+            if(obj_type[3] == '1')
+                calc_x2 = true;
             /*
             switch(obj_type) {
                 case 1: obj_func = obj_1; break;
@@ -285,6 +288,7 @@ void parse_args(const char *infile)
         << "  calc_auc: " << (calc_auc?"TRUE":"FALSE") << endl
         << "  calc_iap: " << (calc_iap?"TRUE":"FALSE") << endl
         << "  calc_consistency: " << (calc_consistency?"TRUE":"FALSE") << endl
+        << "  calc_x2: " << (calc_x2?"TRUE":"FALSE") << endl
         << "belta: " << belta << endl
         << "do_log: " << (do_log?"TRUE":"FALSE") << endl
         << "repeat: " << repeat << endl

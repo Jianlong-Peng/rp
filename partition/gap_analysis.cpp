@@ -173,7 +173,7 @@ int main(int argc, char *argv[])
     if(test_file != "")
         test_set.read_problem(test_file);
 
-    cout << "OBJ = 1/mrss + mauc + miap + 1/mdelta" << endl;
+    cout << "OBJ = 1/mrss + mauc + miap + 1/mdelta + 10*mean_x2" << endl;
     for(vector<vector<float> >::size_type i=0; i<population.size(); ++i) {
         cout << endl << "================genome #" << i << "=====================" << endl;
         vector<double> actualY;
@@ -343,7 +343,7 @@ float obj_func(vector<double> &actualY,
 {
     int n = static_cast<int>(actualY.size());
     double mrss = calcRSS(actualY, predictY) / n;
-    double mauc=0., miap=0., mdelta=0.;
+    double mauc=0., miap=0., mdelta=0., mean_x2=0.;
     if(calc_auc) {
         int k=0;
         for(vector<PredictResult>::size_type i=0; i<predictY.size(); ++i) {
@@ -370,10 +370,23 @@ float obj_func(vector<double> &actualY,
         }
         mdelta /= k;
     }
-    cout << "mrss=" << mrss << " mauc=" << mauc << " miap=" << miap << " mdelta=" << mdelta << endl;
-    if(mdelta != 0.)
-        return STA_CAST(float, 1./mrss+mauc+miap+1./mdelta);
-    else
-        return STA_CAST(float, 1./mrss+mauc+miap+mdelta);
+    if(calc_x2) {
+        int k = 0;
+        for(vector<PredictResult>::size_type i=0; i<predictY.size(); ++i) {
+            double val = 0.;
+            for(vector<double>::size_type j=0; j<predictY[i].each_y.size(); ++j) {
+                val. += pow(population[k],2);
+                ++k;
+            }
+            mean_x2 += val;
+        }
+        mean_x2 /= predictY.size();
+    }
+    cout << "mrss=" << mrss << " mauc=" << mauc << " miap=" << miap << " mdelta=" << mdelta << " mean_x2=" << mean_x2 << endl;
+    if(mrss < 1e-3)
+        mrss = 1e-3;
+    if(mdelta < 1e-3)
+        mdelta = 1e-3;
+    return STA_CAST(float, 1./mrss+mauc+miap+1./mdelta+10*mean_x2);
 }
 

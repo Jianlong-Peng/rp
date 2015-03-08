@@ -53,6 +53,7 @@ vector<bool> is_som;
 bool calc_auc(false);
 bool calc_iap(false);
 bool calc_consistency(false);
+bool calc_x2(false);
 double belta(1);
 bool do_log(true);
 
@@ -140,8 +141,8 @@ int main(int argc, char *argv[])
     log_pop << "run: " << count << endl
         << ga->population();
     while(!ga->done()) {
-		++count;
-		cout << "to do run: " << count << endl;
+        ++count;
+        cout << "to do run: " << count << endl;
         ga->step();
         if(count%freq_flush == 0) {
             log_pop << "run: " << count << endl
@@ -219,10 +220,12 @@ void parse_args(const char *infile)
             is >> obj_type;
             if(obj_type[0] == '1')
                 calc_auc = true;
-            if(obj_type[1] == '1')
+            if(obj_type.size()>=2 && obj_type[1]=='1')
                 calc_iap = true;
-            if(obj_type[2] == '1')
+            if(obj_type.size()>=3 && obj_type[2]=='1')
                 calc_consistency = true;
+            if(obj_type.size()>=4 && obj_type[3]=='1')
+                calc_x2 = true;
             /*
             switch(obj_type) {
                 case 1: obj_func = obj_1; break;
