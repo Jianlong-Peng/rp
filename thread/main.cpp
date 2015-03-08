@@ -223,11 +223,11 @@ void parse_args(const char *infile)
             is >> obj_type;
             if(obj_type[0] == '1')
                 calc_auc = true;
-            if(obj_type[1] == '1')
+            if(obj_type.size()>=2 && obj_type[1]=='1')
                 calc_iap = true;
-            if(obj_type[2] == '1')
+            if(obj_type.size()>=3 && obj_type[2]=='1')
                 calc_consistency = true;
-            if(obj_type[3] == '1')
+            if(obj_type.size()>=4 && obj_type[3]=='1')
                 calc_x2 = true;
             /*
             switch(obj_type) {
