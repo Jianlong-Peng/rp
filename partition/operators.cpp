@@ -577,7 +577,7 @@ static float obj_func(vector<double> &actualY,
         mrss = 1e-3;
     if(mdelta < 1e-3)
         mdelta = 1e-3;
-    return STA_CAST(float, 1./mrss+mauc+miap+belta*1./mdelta,10*mean_x2);
+    return STA_CAST(float, 1./mrss+mauc+miap+belta*1./mdelta+10*mean_x2);
 }
 
 float myEvaluator(GAGenome &genome)

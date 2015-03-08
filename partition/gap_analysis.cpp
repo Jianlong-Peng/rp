@@ -44,6 +44,7 @@ svm_parameter *para;
 bool calc_auc(false);
 bool calc_iap(false);
 bool calc_consistency(false);
+bool calc_x2(false);
 int run(-1);
 vector<vector<float> > population;
 bool do_log(true);
@@ -76,7 +77,7 @@ int main(int argc, char *argv[])
             << "    0 - RBF" << endl
             << "    1 - tanimoto kernel" << endl
             << "    2 - minMax kernel" << endl
-            << "  --obj   str  : <default: '000'>" << endl
+            << "  --obj   str  : <default: '0000'>" << endl
             << "                 same as specified in `para.txt`" << endl
             << "  --no-log     : <optional>" << endl
             << "    if given, models will be trained on y instead of log10(y)" << endl
@@ -139,10 +140,12 @@ int main(int argc, char *argv[])
     }
     if(obj_type[0] == '1')
         calc_auc = true;
-    if(obj_type[1] == '1')
+    if(obj_type.size()>=2 && obj_type[1]=='1')
         calc_iap = true;
-    if(obj_type[2] == '1')
+    if(obj_type.size()>=3 && obj_type[2]=='1')
         calc_consistency = true;
+    if(obj_type.size()>=4 && obj_type[3]=='1')
+        calc_x2 = true;
     
     cout << "CMD:";
     for(int i=0; i<argc; ++i)
@@ -375,7 +378,7 @@ float obj_func(vector<double> &actualY,
         for(vector<PredictResult>::size_type i=0; i<predictY.size(); ++i) {
             double val = 0.;
             for(vector<double>::size_type j=0; j<predictY[i].each_y.size(); ++j) {
-                val. += pow(population[k],2);
+                val += pow(population[k],2);
                 ++k;
             }
             mean_x2 += val;

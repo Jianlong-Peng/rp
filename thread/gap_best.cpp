@@ -47,6 +47,7 @@ vector<int> num_xs;
 bool calc_auc(false);
 bool calc_iap(false);
 bool calc_consistency(true);
+bool calc_x2(false);
 int nthread(5);
 int nfolds(5);
 int repeat(30);
@@ -125,12 +126,13 @@ void exit_with_help(const char *name)
         << "  --run      int: specify which run of population to be analyzed" << endl
         << "  --out     file: where to save the best genome" << endl
         << "  --som     file: <optional>" << endl
-        << "  --obj      str: <default: 001>" << endl
+        << "  --obj      str: <default: 0010>" << endl
         << "    apart from RSS, the following values will be calculated" << endl
         << "    if the corresponding bit is set to be 1" << endl
         << "      1 - AUC  (--som is needed)" << endl
         << "      2 - IAP  (--som is needed)" << endl
         << "      3 - consistency" << endl
+        << "      4 - mean{sum_j{x_ij^2}}" << endl
         << "    by default, comparsion is made based on (1/RSS+belta*1/consistency)" << endl
         << "  --repeat  int : <default: 30>" << endl
         << "    number of times to do 5-fold CV" << endl
