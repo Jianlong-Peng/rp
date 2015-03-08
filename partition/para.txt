@@ -30,7 +30,7 @@ operator_type 2
 #
 
 #obj_type should be a string of length <= 4
-#fitness will be 1/mean(RSS) + mean(AUC(xi)) + mean(IAP) + belta * {1/mean(consistency)} + 10 * mean(sum_j(xij^2))
+#fitness will be 1/mean(RSS) + mean(AUC(xi)) + mean(IAP) + belta * {1/mean(consistency)} + wx2 * mean(sum_j(xij^2))
 #where, weight = [1,10]
 #obj_type[0]: mean(AUC(xi)),  where AUC(xi) to estimate whether the atom contribution is compatible to experimentally observed SOMs
 #obj_type[1]: mean(IAP)
@@ -40,6 +40,8 @@ operator_type 2
 obj_type 0110
 
 belta 2
+
+wx2 20
 
 #if do_log == 0, then models will be trained based on y instead of log10(y)
 do_log 1

@@ -55,6 +55,7 @@ bool calc_iap(false);
 bool calc_consistency(false);
 bool calc_x2(false);
 double belta(1);
+double wx2(20);
 bool do_log(true);
 
 int kernel_type(0);
@@ -243,6 +244,8 @@ void parse_args(const char *infile)
             is >> operator_type;
         else if(para == "belta")
             is >> belta;
+        else if(para == "wx2")
+            is >> wx2;
         else if(para == "do_log") {
             int temp;
             is >> temp;

@@ -52,6 +52,7 @@ int nthread(5);
 int nfolds(5);
 int repeat(30);
 double belta(1.);
+double wx2(1.);
 // the following is fixed.
 int kernel_type(0);      // RBF
 int operator_type(1);    // not used here

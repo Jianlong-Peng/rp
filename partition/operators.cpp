@@ -57,6 +57,7 @@ extern bool calc_iap;
 extern bool calc_consistency;
 extern bool calc_x2;
 extern double belta;
+extern double wx2;
 extern bool do_log;
 
 
@@ -577,7 +578,7 @@ static float obj_func(vector<double> &actualY,
         mrss = 1e-3;
     if(mdelta < 1e-3)
         mdelta = 1e-3;
-    return STA_CAST(float, 1./mrss+mauc+miap+belta*1./mdelta+10*mean_x2);
+    return STA_CAST(float, 1./mrss+mauc+miap+belta*1./mdelta+wx2*mean_x2);
 }
 
 float myEvaluator(GAGenome &genome)
