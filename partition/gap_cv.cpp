@@ -288,7 +288,7 @@ void load_cgp(string &infile)
     }
     string line;
     cgp.clear();
-    cgp.resize(num_types);
+    cgp.resize(num_types*3);
     while(getline(inf,line)) {
         if(line.size()==0 || line[0]=='#')
             continue;
@@ -301,6 +301,8 @@ void load_cgp(string &infile)
         cgp[3*_type+2] = p;
     }
     inf.close();
+    for(vector<float>::size_type i=0; i<cgp.size();++i)
+        population.push_back(cgp[i]);
 }
 
 /*
