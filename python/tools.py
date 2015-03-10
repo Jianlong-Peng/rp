@@ -6,7 +6,7 @@
 #Email: jlpeng1201@gmail.com
 # HomePage: 
 #  Version: 0.0.1
-#   LastChange: 2015-03-10 02:35:30
+#   LastChange: 2015-03-10 09:45:54
 #  History:
 #=============================================================================
 '''
@@ -28,6 +28,8 @@ def load_predict(infile):
 	inf = open(infile,'r')
 	for line in inf:
 		line = line.split()
+		if len(line) == 2:
+			continue
 		name = line[0].split("\\")[-1].split(".")[0]
 		values = []
 		if ":" in line[2]:
@@ -43,13 +45,16 @@ def load_predict(infile):
 	return predict
 
 
-def load_des(infile):
+def load_des(infile,candidates=[]):
 	des = {}
 	inf = open(infile,'r')
 	line = inf.readline()
 	while line != "":
 		name = line.split()[0].split("\\")[-1]
 		name = name[:name.rfind(".")]
+		if candidates and name not in candidates:
+			line = inf.readline()
+			continue
 		des[name] = []
 		line = inf.readline()
 		while line!="" and line.startswith("\t"):
