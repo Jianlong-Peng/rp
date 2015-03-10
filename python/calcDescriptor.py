@@ -6,7 +6,7 @@
 #        Email: jlpeng1201@gmail.com
 #     HomePage: 
 #      Created: 2013-09-22 09:23:05
-#   LastChange: 2014-10-16 21:56:46
+#   LastChange: 2015-03-10 14:26:01
 #      History:
 #=============================================================================
 '''
@@ -662,6 +662,7 @@ def calcDescriptor(infile, candidate_atoms):
     mol = pybel.readfile("mopout",infile).next()
     #N-dealkylation, O-dealkylation, bezylic/allylic C-hydroxylation, aliphatic C-hydroxylation, 
     #aromatic c-hydroxylation, N-oxydation/Conjugation, O-Conjugation
+    #[[atom1,atom2,...],[atom1,atom2,...],...]
     matches = matchAtoms(mol, candidate_atoms)
     #initialize `descriptors`
     descriptors = {}  #key=atom_id, value=[atom_type,descriptors,...]
