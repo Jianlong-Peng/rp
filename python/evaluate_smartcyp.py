@@ -7,7 +7,7 @@
 #     HomePage: 
 #      Version: 0.0.1
 #      Created: 2015-03-09 20:38:49
-#   LastChange: 2015-03-10 11:02:55
+#   LastChange: 2015-03-10 17:02:09
 #      History:
 #=============================================================================
 '''
@@ -42,7 +42,7 @@ def main(argv=sys.argv):
     des = load_des(argv[3])   #key=name, value=[(atom,type),...]
 
     actual_all,actual_no6  = load_som(argv[4], des)      #key=name, value=[site1,site2,...]
-    predict = load_predict(argv[5],_type)  #key=name, value=[(atom,rank,score),...]
+    predict = load_predict(argv[5],_type,des)  #key=name, value=[(atom,rank,score),...]
 
     print "===report considering all SOMs except those with more than one atoms==="
     do_evaluate(actual_all,predict,k)
@@ -93,6 +93,8 @@ def load_som(infile, des):
     line = inf.readline()
     for line in inf:
         line = line.strip().split("\t")
+        if not des.has_key(line[0]):
+            continue
         actual_all[line[0]] = []
         actual_no6[line[0]] = []
         for atom in line[3:]:
@@ -106,7 +108,7 @@ def load_som(infile, des):
     return actual_all,actual_no6
 
 
-def load_predict(infile,_type):
+def load_predict(infile,_type,des):
     predict = {}
     inf = open(infile,'r')
     line = inf.readline()
@@ -116,6 +118,8 @@ def load_predict(infile,_type):
             name = str(int(line[0])+1)
         else:
             name = line[0]
+        if not des.has_key(name):
+            continue
         if not predict.has_key(name):
             predict[name] = []
         #(atom,rank,score)
