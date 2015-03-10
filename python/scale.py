@@ -125,6 +125,7 @@ def runScale(para, infile, outfile, verbose):
             orig_values = line[2].split(",")
             if len(min_max[0]) != len(orig_values):
                 print >>sys.stderr, "Error: different number of descriptors found for atom type",line[1]
+                print >>sys.stderr, "       suppose to be %d, but found %d"%(len(min_max[0]),len(orig_values))
                 inf.close()
                 outf.close()
                 sys.exit(1)

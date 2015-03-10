@@ -6,7 +6,7 @@
 #        Email: jlpeng1201@gmail.com
 #     HomePage: 
 #      Created: 2013-09-22 09:23:05
-#   LastChange: 2015-03-10 14:26:01
+#   LastChange: 2015-03-10 16:01:51
 #      History:
 #=============================================================================
 '''
@@ -49,9 +49,10 @@ Descriptors to be calculated:
   B      : bond order (Mulliken)
   E2     : two-center total of electronic and nuclear energies
   polarAB: polarizability
-- topological (1)
+- topological (1)   if --span given
   SPAN   : max shortest distance from candidate site to other atoms
            divided by max shortest distance between any atoms
+- logP (1)   if --logp given
 
 As those two-center terms involve two atoms, the following strategies
 will be applied to generate atomic descriptors
@@ -66,27 +67,31 @@ will be applied to generate atomic descriptors
 
 Thus, the following descriptors will be calculated
 (values of descriptors will be saved in the same order as listed below)
-- for atom type 0,1,2,3  (8+5*4+1=29 descriptors)
+- for atom type 0,1,2,3  (8+5*4(+1+1) descriptors)
   RA,NA,EA,SEA,SNA,atomicQ,selfQ,activeQ,
   Bsigsig_max(min,mean,sum), Bsigpi_max(min,mean,sum)
   B_max(min,mean,sum), E2_max(min,mean,sum)
   polarAB_max(min,mean,sum)
   SPAN
-- for atom type 4          (8+5*1+1=14 descriptors)
+  logp
+- for atom type 4          (8+5*1(+1+1) descriptors)
   RA,NA,EA,SEA,SNA,atomicQ,selfQ,activeQ,
   B_cH, E2_cH, Bsigsig_cH, Bsigpi_cH, polarAB_cH
   SPAN
-- for atom type 5  (8+6*4+1=33)
+  logP
+- for atom type 5  (8+6*4(+1+1))
   RA,NA,EA,SEA,SNA,atomicQ,selfQ,activeQ,
   Bsigsig_max(min,mean,sum), Bsigpi_max(min,mean,sum), Bpipi_max(min,mean,sum)
   B_max(min,mean,sum), E2_max(min,mean,sum)
   polarAB_max(min,mean,sum)
   SPAN
-- for atom type 6          (8+5+3*2+1=20 descriptors)
+  logP
+- for atom type 6          (8+5+3*2(+1+1) descriptors)
   RA,NA,EA,SEA,SNA,atomicQ,selfQ,activeQ,
   Bsigsig_OH, Bsigsig_OX, Bsigpi_OH, Bsigpi_OX, Bpipi_OX
   B_OH,B_OX,E2_OH,E2_OX,polarAB_OH,polarAB_OX
   SPAN
+  logP
 
 finally, calculated descriptors will be saved as follows:
     name id:type:d1,d2,...,dn id:type:d1,d2,...,dn ...
@@ -99,6 +104,10 @@ where, `name` is the molecular name, `id` is the atomic ID,
 global DEBUG
 DEBUG = False
 
+global do_span
+do_span = False
+global do_logp
+do_logp = False
 
 #called by 'calcDescriptor'
 #only match those atoms in `candidate_atoms` if `candidate_atoms` is not None
@@ -705,7 +714,16 @@ def calcDescriptor(infile, candidate_atoms):
     calcPolarAB(descriptors,eigenvector,mo_energy,homo_index-1,atom_nbors,atom_symbol)
     inf.close()
     #SPAN
-    calcSPAN(descriptors, mol)
+    global do_span
+    if do_span:
+        calcSPAN(descriptors, mol)
+    #logp
+    global do_logp
+    if do_logp:
+        val = mol.calcdesc(["logP"])
+        for key in descriptors.iterkeys():
+            descriptors[key].append(val)
+
     return descriptors
 
 
@@ -793,6 +811,8 @@ def exit_with_help(prog_name):
     print "            instead of doing calculation"
     print "  -c file : file including candidate atoms for each molecule to be parsed."
     print "            each line of the file should be: `mol_name: atom1 atom2 ...`"
+    print "  --span  : if given, calculate SPAN"
+    print "  --logp  : if given, calculate logp and add to each atom"
     print "  mopout  : could be a .mopout file OR"
     print "            a file containing .mopout file in each line"
     print "  out.txt : where calculated descriptors will be saved.\n"
@@ -809,11 +829,11 @@ def load_candidate_file(infile):
     return candidate
 
 def main(argv=sys.argv):
-    if len(argv)==1 or len(argv)>6:
+    if len(argv) < 2:
         exit_with_help(argv[0])
 
     try:
-        opt_list,args_list = getopt(argv[1:],"dc:",[])
+        opt_list,args_list = getopt(argv[1:],"dc:",["span","logp"])
     except GetoptError,err:
         print err
         sys.exit(1)
@@ -823,11 +843,17 @@ def main(argv=sys.argv):
     mopout = ""
     outfile = ""
     #parse options
+    global do_span
+    global do_logp
     for opt,value in opt_list:
         if opt == "-d":
             detail = True
         elif opt == '-c':
             candidate_file = value
+        elif opt == '--span':
+            do_span = True
+        elif opt == '--logp':
+            do_logp = True
         else:
             print "Error: option %s not recognized"%opt
             sys.exit(1)
