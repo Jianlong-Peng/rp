@@ -6,7 +6,7 @@
 #        Email: jlpeng1201@gmail.com
 #     HomePage: 
 #      Version: 0.0.1
-#   LastChange: 2015-03-11 01:21:59
+#   LastChange: 2015-03-11 11:02:52
 #      History:
 #=============================================================================
 '''
@@ -108,10 +108,22 @@ def create_html(mol,contrib,cl,outfile):
 	atom_table = ""
 	for atom,val in contrib:
 		atom_table += """
-	<tr>
-		<td><a href="#" onclick="highlight_atom('%s'); return false;">%s</a></td>
-		<td>%s</td>
-	</tr>"""%(atom, atom, val)
+	<tr align="center">
+		<td id="atom_%s"><a href="#" onclick="highlight_atom('%s'); return false;">%s.%s&nbsp;&nbsp;&nbsp%s</a></td>
+	</tr>
+		"""%(atom, atom, mol.GetAtomWithIdx(int(atom)-1).GetSymbol(), atom, val)
+
+	top3 = """
+	document.getElementById("atom_%s").setAttribute("bgcolor","#ff9999");  // 1
+	document.getElementById("atom_%s").setAttribute("bgcolor","#fad25a");  // 2
+	document.getElementById("atom_%s").setAttribute("bgcolor","#ffffc1");  // 3
+	"""%(contrib[0][0],contrib[1][0],contrib[2][0])
+	top3_col = "%s,1,%s,2,%s,3"%(contrib[0][0],contrib[1][0],contrib[2][0])
+#		atom_table += """
+#	<tr>
+#		<td><a href="#" onclick="highlight_atom('%s'); return false;">%s.%s</a></td>
+#		<td>%s</td>
+#	</tr>"""%(atom, mol.GetAtomWithIdx(int(atom)-1).GetSymbol(), atom, val)
 
 	outf = open(outfile,'w')
 	print >>outf, """
@@ -119,38 +131,66 @@ def create_html(mol,contrib,cl,outfile):
 <html>
 <head>
 	<script type="text/javascript" src="http://202.127.19.75:8080/ADMET_Predictor/jsme/jsme.nocache.js"></script>
+	<style type="text/css">
+		a:link {text-decoration: none; color: black}
+		a:visited {text-decoration: none; color: green}
+		a:hover {text-decoration: underline; color: red}
+		a:active {text-decoration: blink}
+	</style>
 	<script type="text/javascript" language="javascript">
 		function jsmeOnLoad() {
 			jsmeApplet = new JSApplet.JSME("structure", "340px", "380px", {
 				"options": "query,removehs,depict"
 			});
-			jsmeApplet.readMolFile("%s")
+			jsmeApplet.readMolFile("%s");
+			jsmeApplet.setAtomBackgroundColors(1,"%s");  // highlight for top-3 atoms
+			var rows = document.getElementById("whole_table").rows;
+			for(var i=0; i<rows.length; i++) {
+				for(var j=0; j<rows[i].cells.length; j++) {
+					var cell = rows[i].cells[j];
+					cell.setAttribute("bgcolor","white");
+				}
+			}
+			%s
 		}
+		var last_atom = "";
 		function highlight_atom(atom) {
 			jsmeApplet.resetAtomColors(1);
-			jsmeApplet.setAtomBackgroundColors(1,atom+",2");
+			jsmeApplet.setAtomBackgroundColors(1,"%s,"+atom+",4");
+			if(last_atom != "") {
+				document.getElementById("atom_"+last_atom).setAttribute("bgcolor","white");
+				%s
+			}
+			last_atom = atom;
+			document.getElementById("atom_"+atom).setAttribute("bgcolor","#7fe5d4");   // 4
 		}
 	</script>
 </head>
-<body onload="show_contrib();">
-<table border="1">
+<body>
+<table border="1" cellspacing="3" id="whole_table" bgcolor="white">
 	<tr>
-		<td rowspan="%d"><div id="structure"></div></td>
-		<td colspan="2" align="center">CL<sub>H,int</sub> = %s</td>
+		<td colspan="2" align="center"><b>CL<sub>H,int</sub> = %s</b></td>
 	</tr>
 	<tr>
-		<td>atom&nbsp;&nbsp;&nbsp;</td>
-		<td>contribution</td>
+		<td rowspan="%d"><div id="structure"></div></td>
+	</tr>
+	<tr>
+		<!--
+		<td><b>atom</b>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+		<td><b>contribution</b>&nbsp;&nbsp</td>
+		-->
+		<td align="center">&nbsp;&nbsp;&nbsp;<b>atom contribution</b>&nbsp;&nbsp;&nbsp;</td>
 	</tr>
 	%s
 </table>
 <p><b>Attention</b></br>
 1. both CL<sub>H,int</sub> and values in `contribution` column is log<sub>10</sub> transformed;</br>
-2. you can click the number in `atom` column to highlight the corresponding atom.</br>
+2. the atoms in top-3 are automatically highlighted.</br>
+3. you can click the number in `atom` column to highlight the corresponding atom.</br>
 </p>
 </body>
 </html>
-"""%(Chem.MolToMolBlock(mol).replace("\n","\\n"), len(contrib)+2, cl, atom_table)
+"""%(Chem.MolToMolBlock(mol).replace("\n","\\n"), top3_col, top3, top3_col, top3, cl, len(contrib)+2, atom_table)
 	outf.close()
 
 main()
