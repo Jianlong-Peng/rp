@@ -114,11 +114,11 @@ def create_html(mol,contrib,cl,outfile):
 		"""%(atom, atom, mol.GetAtomWithIdx(int(atom)-1).GetSymbol(), atom, val)
 
 	top3 = """
-	document.getElementById("atom_%s").setAttribute("bgcolor","#ff9999");  // 1
 	document.getElementById("atom_%s").setAttribute("bgcolor","#fad25a");  // 2
-	document.getElementById("atom_%s").setAttribute("bgcolor","#ffffc1");  // 3
+	document.getElementById("atom_%s").setAttribute("bgcolor","#e1c3e6");  // 6
+	document.getElementById("atom_%s").setAttribute("bgcolor","#a2ece0");  // 4
 	"""%(contrib[0][0],contrib[1][0],contrib[2][0])
-	top3_col = "%s,1,%s,2,%s,3"%(contrib[0][0],contrib[1][0],contrib[2][0])
+	top3_col = "%s,2,%s,6,%s,4"%(contrib[0][0],contrib[1][0],contrib[2][0])
 #		atom_table += """
 #	<tr>
 #		<td><a href="#" onclick="highlight_atom('%s'); return false;">%s.%s</a></td>
@@ -156,13 +156,13 @@ def create_html(mol,contrib,cl,outfile):
 		var last_atom = "";
 		function highlight_atom(atom) {
 			jsmeApplet.resetAtomColors(1);
-			jsmeApplet.setAtomBackgroundColors(1,"%s,"+atom+",4");
+			jsmeApplet.setAtomBackgroundColors(1,"%s,"+atom+",1");
 			if(last_atom != "") {
 				document.getElementById("atom_"+last_atom).setAttribute("bgcolor","white");
 				%s
 			}
 			last_atom = atom;
-			document.getElementById("atom_"+atom).setAttribute("bgcolor","#7fe5d4");   // 4
+			document.getElementById("atom_"+atom).setAttribute("bgcolor","#ff9999");   // 1
 		}
 	</script>
 </head>
