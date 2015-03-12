@@ -108,6 +108,8 @@ int main(int argc, char *argv[])
             for(int j=0; j<train_set[i].num_atoms; ++j) {
                 if(!train_set[i].som.empty() && train_set[i].som[j]==1)
                     is_som[k] = true;
+                else
+                    is_som[k] = false;
                 ++k;
             }
         }

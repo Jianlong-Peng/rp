@@ -248,6 +248,8 @@ void create_svm_problems(Sample &train_set, vector<float> &population)
     int i,j,k;
     // 1. count number of Xs for each atom type
     vector<int> num_xs(50,0);
+    for(int i=0; i<50; ++i)
+        num_xs[i] = 0;
     for(i=0; i<train_set.num_samples(); ++i) {
         for(j=0; j<train_set[i].num_atoms; ++j) {
             int _type = train_set[i].atom_type[j];

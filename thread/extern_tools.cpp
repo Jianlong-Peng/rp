@@ -81,13 +81,19 @@ void construct_svm_problems_parameters()
     num_types += 1;
     num_xs.resize(num_types, 0);
     num_each_sample.resize(num_types, 0);
+    for(int i=0; i<num_types; ++i) {
+        num_xs[i] = 0;
+        num_each_sample[i] = 0;
+    }
     for(int i=0; i<train_set.num_samples(); ++i) {
         //vector<int> sample_index_temp;
         for(int j=0; j<train_set[i].num_atoms; ++j) {
             int _type = train_set[i].atom_type[j];
             int tmp = static_cast<int>(train_set[i].x[j].size());
             if(num_xs[_type] && tmp!=num_xs[_type]) {
-                cerr << "Error: incompatible number of Xs for atom type " << _type << endl;
+                cerr << "Error: incompatible number of Xs for atom type " << _type << endl
+			<< "       i=" << i << ", j=" << j << ", num=" << tmp << endl
+			<< "       num_xs[_type]=" << num_xs[_type] << endl;
                 exit(EXIT_FAILURE);
             }
             num_xs[_type] = tmp;

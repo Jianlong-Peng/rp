@@ -211,6 +211,8 @@ void Sample::read_problem(string train_des_file, string train_som_file)
             continue;
         }
         data[i].som.resize(data[i].num_atoms, false);
+        for(int k=0; k<data[i].num_atoms; ++k)
+            data[i].som[k] = false;
         bool bond(false);
         for(string::size_type j=tab_start+1; j<line.size(); ++j) {
             if(line[j] == '-')

@@ -72,6 +72,10 @@ void construct_svm_problems_parameters()
     num_types += 1;
     num_xs.resize(num_types, 0);
     num_each_sample.resize(num_types, 0);
+    for(int i=0; i<num_types; ++i) {
+         num_xs[i] = 0;
+         num_each_sample[i] = 0;
+    }
     for(int i=0; i<train_set.num_samples(); ++i) {
         //vector<int> sample_index_temp;
         for(int j=0; j<train_set[i].num_atoms; ++j) {
