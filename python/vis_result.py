@@ -184,9 +184,9 @@ def create_html(mol,contrib,cl,outfile):
 	%s
 </table>
 <p><b>Attention</b></br>
-1. both CL<sub>H,int</sub> and values in `contribution` column is log<sub>10</sub> transformed;</br>
+1. both CL<sub>H,int</sub> and values in `atom contribution` column is log<sub>10</sub> transformed;</br>
 2. the atoms in top-3 are automatically highlighted.</br>
-3. you can click the number in `atom` column to highlight the corresponding atom.</br>
+3. you can click the corresponding cell in `atom contribution` column to highlight atoms.</br>
 </p>
 </body>
 </html>
