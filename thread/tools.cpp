@@ -243,6 +243,13 @@ void Sample::read_problem(string train_des_file, string train_som_file)
     inf3.close();
     this->som = true;
     
+	int k = 0;
+	genome_index.clear();
+	for(vector<Molecule>::size_type i=0; i<data.size(); ++i) {
+		genome_index.push_back(k);
+		k += data[i].num_atoms;
+	}
+	genome_index.push_back(k);
 }
 
 void Sample::write_problem(string outfile)

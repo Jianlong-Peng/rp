@@ -31,7 +31,7 @@ void do_each(int begin, int end, vector<double> &actualY, vector<PredictResult> 
         vector<float> &population, bool fraction);
 // do cross-validation
 void doCV(int nfolds, vector<double> &actualY, vector<PredictResult> &predictY,
-        vector<float> &population, bool fraction);
+        vector<int> &sample_index, vector<float> &population, bool fraction);
 
 #endif   /* ----- #ifndef EXTERN_TOOLS_H  ----- */
 

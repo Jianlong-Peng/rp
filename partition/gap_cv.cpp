@@ -164,7 +164,8 @@ int main(int argc, char *argv[])
              randomize_samples(false);
              vector<double> actualY;
              vector<PredictResult> predictY;
-             doCV(nfolds, actualY, predictY, population, true);
+			 vector<int> sample_index;
+             doCV(nfolds, actualY, predictY, sample_index, population, true);
              double rmse = calcRMSE(actualY, predictY);
              double r = calcR(actualY, predictY);
              cout << rmse << " " << r << endl;
@@ -177,7 +178,8 @@ int main(int argc, char *argv[])
         
         vector<double> actualY;
         vector<PredictResult> predictY;
-        doCV(nfolds, actualY, predictY, population, true);
+		vector<int> sample_index;
+        doCV(nfolds, actualY, predictY, sample_index, population, true);
         if(verbose) {
             cout << "name\tactualY\tpredictY";
             if(verbose == 2)

@@ -53,8 +53,8 @@ void print_null(const char *s) {}
 void read_population(string &pop_file);
 void predict_test_set(Sample &test, int idx_pop);
 void write_train_partition();
-float obj_func(vector<double> &actualY,
-    vector<PredictResult> &predictY, vector<float> &population);
+float obj_func(vector<double> &actualY, vector<PredictResult> &predictY, 
+	vector<int> &sample_index, int idx_pop);
 
 int main(int argc, char *argv[])
 {
@@ -181,13 +181,14 @@ int main(int argc, char *argv[])
         cout << endl << "================genome #" << i << "=====================" << endl;
         vector<double> actualY;
         vector<PredictResult> predictY;
-        doCV(nfolds, actualY, predictY, population[i], true);
+		vector<int> sample_index;
+        doCV(nfolds, actualY, predictY, sample_index, population[i], true);
         double rmse = calcRMSE(actualY, predictY);
         double r = calcR(actualY, predictY);
         cout << endl << "  result of " << nfolds << "-fold cross-validation" << endl
             << "  RMSE=" << rmse << endl
             << "     R=" << r << endl
-            << "   OBJ=" << obj_func(actualY,predictY, population[i]) << endl
+            << "   OBJ=" << obj_func(actualY,predictY,sample_index,i) << endl
             << endl;
         cout << endl << "  predicting results on training set:" << endl;
         predict_test_set(train_set, static_cast<int>(i));
@@ -341,8 +342,8 @@ void predict_test_set(Sample &test, int idx_pop)
         << endl;
 }
 
-float obj_func(vector<double> &actualY,
-    vector<PredictResult> &predictY, vector<float> &population)
+float obj_func(vector<double> &actualY, vector<PredictResult> &predictY, 
+	vector<int> &sample_index, int idx_pop)
 {
     int n = static_cast<int>(actualY.size());
     double mrss = calcRSS(actualY, predictY) / n;
@@ -364,22 +365,24 @@ float obj_func(vector<double> &actualY,
     if(calc_consistency) {
         int k = 0;
         for(vector<PredictResult>::size_type i=0; i<predictY.size(); ++i) {
+			int idx_genome = train_set.get_start_index(sample_index[i]);
             for(vector<double>::size_type j=0; j<predictY[i].each_y.size(); ++j) {
-                double temp_actual  = actualY[i] + log10(population[k]);
+                double temp_actual  = actualY[i] + log10(population[idx_pop][idx_genome]);
                 double temp_predict = predictY[i].each_y[j];
                 mdelta += pow(temp_predict-temp_actual, 2);
                 ++k;
+				++idx_genome;
             }
         }
         mdelta /= k;
     }
     if(calc_x2) {
-        int k = 0;
         for(vector<PredictResult>::size_type i=0; i<predictY.size(); ++i) {
             double val = 0.;
+			int idx_genome = train_set.get_start_index(sample_index[i]);
             for(vector<double>::size_type j=0; j<predictY[i].each_y.size(); ++j) {
-                val += pow(population[k],2);
-                ++k;
+                val += pow(population[idx_pop][idx_genome],2);
+				++idx_genome;
             }
             mean_x2 += val;
         }

@@ -71,6 +71,11 @@ public:
             count += (data[j].num_atoms);
         return count;
     }
+	int get_start_index(int i) const {
+		if(i < 0)
+			i += static_cast<int>(data.size());
+		return genome_index[i];
+	}
     int number_atoms_of_type(int type);
     inline bool has_som() const {return som;}
     // if do_log is false, models are trained based on y instead of log10(y)
@@ -80,6 +85,7 @@ public:
 
 private:
     vector<Molecule> data;
+	vector<int> genome_index;  // starting index of each sample
     bool som;
 };
 

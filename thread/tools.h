@@ -5,7 +5,7 @@
 #        Email: jlpeng1201@gmail.com
 #     HomePage: 
 #      Created: 2014-09-15 19:50:31
-#   LastChange: 2014-10-31 15:57:25
+#   LastChange: 2015-03-12 12:38:34
 #      History:
 =============================================================================*/
 
@@ -71,6 +71,11 @@ public:
             count += (data[j].num_atoms);
         return count;
     }
+	int get_start_index(int i) const {
+		if(i < 0)
+			i += static_cast<int>(genome_index.size());
+		return genome_index[i];
+	}
     int number_atoms_of_type(int type);
     inline bool has_som() const {return som;}
     vector<PredictResult> predict(vector<svm_model*> &models, bool do_log);
@@ -79,6 +84,7 @@ public:
 
 private:
     vector<Molecule> data;
+	vector<int> genome_index;   // starting index of each sample
     bool som;
 };
 

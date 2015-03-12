@@ -314,14 +314,12 @@ static void do_each(int begin, int end, vector<double> &actualY, vector<PredictR
     }
     else {
         // construct train and test set
-        idx_genome = 0;
         for(i=0; i<train_set.num_samples(); ++i) {
             // test set
-            if(i>=begin && i<end) {
-                idx_genome += train_set[perm[ii][i]].num_atoms;
+            if(i>=begin && i<end)
                 continue;
-            }
             // training set
+			idx_genome = train_set.get_start_index(perm[ii][i]);
             for(j=0; j<train_set[perm[ii][i]].num_atoms; ++j) {
                 int _type = train_set[perm[ii][i]].atom_type[j];
                 for(k=0; k<num_xs[_type]; ++k) {
@@ -339,6 +337,7 @@ static void do_each(int begin, int end, vector<double> &actualY, vector<PredictR
         }
         // train models
         vector<svm_model*> models(num_types, NULL);
+		idx_genome = train_set.get_start_index(-1);
         for(i=0; i<num_types; ++i) {
             para[ii]->C = population[idx_genome];
             para[ii]->gamma = population[idx_genome+1];

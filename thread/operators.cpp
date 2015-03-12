@@ -399,7 +399,8 @@ pthread_mutex_t mut;
 
 // if begin <= end, then use all training samples to train the model, and
 // apply the model to training set
-static void do_each(int begin, int end, vector<double> &actualY, vector<PredictResult> &predictY, int ii)
+static void do_each(int begin, int end, vector<double> &actualY, 
+	vector<PredictResult> &predictY, vector<int> &sample_index, int ii)
 {
     int i,j,k,idx_genome;
     for(i=0; i<num_types; ++i)
@@ -484,14 +485,12 @@ static void do_each(int begin, int end, vector<double> &actualY, vector<PredictR
     }
     else {
         // construct train and test set
-        idx_genome = 0;
         for(i=0; i<train_set.num_samples(); ++i) {
             // test set
-            if(i>=begin && i<end) {
-                idx_genome += train_set[perm[ii][i]].num_atoms;
+            if(i>=begin && i<end)
                 continue;
-            }
             // training set
+			idx_genome = train_set.get_start_index(perm[ii][i]);
             for(j=0; j<train_set[perm[ii][i]].num_atoms; ++j) {
                 int _type = train_set[perm[ii][i]].atom_type[j];
                 for(k=0; k<num_xs[_type]; ++k) {
@@ -508,6 +507,7 @@ static void do_each(int begin, int end, vector<double> &actualY, vector<PredictR
             }
         }
         // train models
+		idx_genome = train_set.get_start_index(-1);
         vector<svm_model*> models(num_types, NULL);
         for(i=0; i<num_types; ++i) {
             para[ii]->C = population[idx_genome];
@@ -555,6 +555,7 @@ static void do_each(int begin, int end, vector<double> &actualY, vector<PredictR
             if(val.y < 0)
                 cout << "Warning(" << __FILE__ << ":" << __LINE__ << "): predicted CL < 0, may be out of range!" << endl;
             val.y = log10(val.y);
+			sample_index.push_back(perm[ii][i]);
             actualY.push_back(train_set[perm[ii][i]].y);
             predictY.push_back(val);
         }
@@ -567,7 +568,7 @@ static void do_each(int begin, int end, vector<double> &actualY, vector<PredictR
     
 }
 
-static float obj_func(vector<double> &actualY, vector<PredictResult> &predictY)
+static float obj_func(vector<double> &actualY, vector<PredictResult> &predictY, vector<int> &sample_index)
 {
     int n = STA_CAST(int, actualY.size());
     double mrss = calcRSS(actualY, predictY) / n;
@@ -592,22 +593,24 @@ static float obj_func(vector<double> &actualY, vector<PredictResult> &predictY)
     if(calc_consistency) {
         int k = 0;
         for(vector<PredictResult>::size_type i=0; i<predictY.size(); ++i) {
+			int idx_genome = train_set.get_start_index(sample_index[i]);
             for(vector<double>::size_type j=0; j<predictY[i].each_y.size(); ++j) {
-                double temp_actual  = actualY[i] + log10(population[k]);
+                double temp_actual  = actualY[i] + log10(population[idx_genome]);
                 double temp_predict = predictY[i].each_y[j];
                 mdelta += pow(temp_predict - temp_actual, 2);
                 ++k;
+				++idx_genome;
             }
         }
         mdelta /= k;
     }
     if(calc_x2) {
-        int k=0;
         for(vector<PredictResult>::size_type i=0; i<predictY.size(); ++i) {
+			int idx_genome = train_set.get_start_index(sample_index[i]);
             double val = 0.;
             for(vector<double>::size_type j=0; j<predictY[i].each_y.size(); ++j) {
-                val += pow(population[k],2);
-                ++k;
+                val += pow(population[idx_genome],2);
+				++idx_genome;
             }
             mean_x2 += val;
         }
@@ -632,12 +635,13 @@ static void *doCV(void *arg)
             break;
         vector<double> actualY;
         vector<PredictResult> predictY;
+		vector<int> sample_index;
         for(j=0; j<nfolds; ++j) {
             int begin = j*n/nfolds;
             int end   = (j+1)*n/nfolds;
-            do_each(begin, end, actualY, predictY, i);
+            do_each(begin, end, actualY, predictY, sample_index, i);
         }
-        obj_values[i] = obj_func(actualY, predictY);
+        obj_values[i] = obj_func(actualY, predictY, sample_index);
     }
 
     pthread_exit(0);

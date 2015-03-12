@@ -530,8 +530,8 @@ float obj_5(vector<double> &actualY, vector<PredictResult> &predictY, GA1DArrayG
 }
 */
 //static int n_calls(0);
-static float obj_func(vector<double> &actualY, 
-        vector<PredictResult> &predictY, vector<float> &population)
+static float obj_func(vector<double> &actualY, vector<PredictResult> &predictY, 
+	vector<int> &sample_index, vector<float> &population)
 {
     int n = STA_CAST(int, actualY.size());
     double mrss = calcRSS(actualY, predictY) / n;
@@ -553,22 +553,24 @@ static float obj_func(vector<double> &actualY,
     if(calc_consistency) {
         int k = 0;
         for(vector<PredictResult>::size_type i=0; i<predictY.size(); ++i) {
+			int idx_genome = train_set.get_start_index(sample_index[i]);
             for(vector<double>::size_type j=0; j<predictY[i].each_y.size(); ++j) {
-                double temp_actual  = actualY[i] + log10(population[k]);
+                double temp_actual  = actualY[i] + log10(population[idx_genome]);
                 double temp_predict = predictY[i].each_y[j];
                 mdelta += pow(temp_predict-temp_actual, 2);
                 ++k;
+				++idx_genome;
             }
         }
         mdelta /= k;
     }
     if(calc_x2) {
-        int k = 0;
         for(vector<PredictResult>::size_type i=0; i<predictY.size(); ++i) {
             double val=0.;
+			int idx_genome = train_set.get_start_index(sample_index[i]);
             for(vector<double>::size_type j=0; j<predictY[i].each_y.size(); ++j) {
-                val += pow(population[k],2);
-                ++k;
+                val += pow(population[idx_genome],2);
+				++idx_genome;
             }
             mean_x2 += val;
         }
@@ -595,10 +597,11 @@ float myEvaluator(GAGenome &genome)
     
     vector<double> actualY;
     vector<PredictResult> predictY;
+	vector<int> sample_index;
     vector<float> population;
     for(int i=0; i<train_set.count_total_num_atoms()+num_types*3; ++i)
         population.push_back(g.gene(i));
-    doCV(nfolds, actualY, predictY, population, true);
+    doCV(nfolds, actualY, predictY, sample_index, population, true);
     /*
     for(int i=0; i<nfolds; ++i) {
         int begin = i*(train_set.num_samples())/nfolds;
@@ -606,7 +609,7 @@ float myEvaluator(GAGenome &genome)
         do_each(begin, end, actualY, predictY, g);
     }
     */
-    return obj_func(actualY, predictY, population);
+    return obj_func(actualY, predictY, sample_index, population);
 }
 
 

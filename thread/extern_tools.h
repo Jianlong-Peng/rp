@@ -25,9 +25,6 @@ void randomize_samples(bool verbose=false);
 void construct_svm_problems_parameters();
 // free probs, para
 void free_svm_problems_parameters();
-// do cross-validation
-void doCV(int nfolds, vector<double> &actualY, vector<PredictResult> &predictY,
-        vector<float> &population, bool fraction);
 
 #endif   /* ----- #ifndef EXTERN_TOOLS_H  ----- */
 

@@ -119,6 +119,7 @@ int main(int argc, char *argv[])
     outf << "rmse\tr\trmse\tr\trmse\tr" << endl;
     vector<double> actualY;
     vector<PredictResult> predictY;
+	vector<int> sample_index;
     for(i=0; i<ntimes; ++i) {
         cout << "#iter " << i+1 << endl;
 
@@ -126,7 +127,7 @@ int main(int argc, char *argv[])
         
         random_init_genome();
     
-        doCV(5, actualY, predictY, genome, true);
+        doCV(5, actualY, predictY, sample_index, genome, true);
         outf << calcRMSE(actualY, predictY) << "\t" << calcR(actualY, predictY);
 
         train_models();
