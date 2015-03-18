@@ -17,7 +17,7 @@
 #include <cstring>
 #include "tools.h"
 #include "../svm/svm.h"
-#include "../partition/tools.h"
+#include "../utilities/tools.h"
 
 using namespace std;
 

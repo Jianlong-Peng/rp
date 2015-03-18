@@ -2,9 +2,10 @@ GA_ROOT = /home/simmluo/users/jlpeng/lib/galib247
 CFLAGS = -I$(GA_ROOT) -Wall -O2
 #CFLAGS = -I$(GA_ROOT) -Wall -g
 CFLAGS_P = -I$(GA_ROOT) -Wall -O2 -DNTHREAD
+#CFLAGS_P = -I$(GA_ROOT) -Wall -g -DNTHREAD
 LDFLAGS = -L$(GA_ROOT)/ga -lga
 
-OBJS = tools.o ../svm/svm.o
+OBJS = ../utilities/tools.o ../svm/svm.o
 
 EXES = ga_partition gap_train gap_predict gap_train_p gap_cv write_svm_problem gap_analysis gap_random gap_sites gap
 
@@ -18,9 +19,9 @@ gap_train_p.o: gap_train.cpp
 	@echo to build $@
 	@g++ $(CFLAGS) $< -c
 
-ga_partition: $(OBJS) operators.o main.o extern_tools.o
+ga_partition: $(OBJS) main.o extern_tools.o ../utilities/extern_tools.o ../utilities/operators.o
 	@echo to build ga_partition
-	@g++ $(OBJS) operators.o  extern_tools.o main.o $(LDFLAGS) -o ga_partition
+	@g++ $(OBJS) ../utilities/operators.o ../utilities/extern_tools.o extern_tools.o main.o $(LDFLAGS) -o ga_partition
 
 gap: ga_partition
 	ln -s ga_partition gap

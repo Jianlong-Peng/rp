@@ -14,7 +14,7 @@
 #include <iterator>
 #include <cmath>
 #include "extern_tools.h"
-#include "tools.h"
+#include "../utilities/tools.h"
 #include "../svm/svm.h"
 #include <ga/garandom.h>
 
@@ -180,9 +180,9 @@ void do_each(int begin, int end, vector<double> &actualY, vector<PredictResult> 
         probs[i]->l = 0;
 
     if(para->kernel_type == PRECOMPUTED) {
-		cerr << "Error: PRECOMPUTED kernel not supported!!" << endl;
-		exit(EXIT_FAILURE);
-		/*
+        cerr << "Error: PRECOMPUTED kernel not supported!!" << endl;
+        exit(EXIT_FAILURE);
+        /*
         vector<vector<vector<double> > > train_xs(num_types);
         vector<vector<double> > train_ys(num_types);
         // construct training set
@@ -203,7 +203,7 @@ void do_each(int begin, int end, vector<double> &actualY, vector<PredictResult> 
                             train_ys[_type].push_back(population[idx_genome]);
                         else
                             train_ys[_type].push_back(pow(10,population[idx_genome]));
-					}
+                    }
                 }
                 ++idx_genome;
             }
@@ -276,7 +276,7 @@ void do_each(int begin, int end, vector<double> &actualY, vector<PredictResult> 
         free(x);
         for(i=0; i<num_types; ++i)
             svm_free_and_destroy_model(&models[i]);
-		*/
+        */
     }
     else {
         // construct train and test set
@@ -285,7 +285,7 @@ void do_each(int begin, int end, vector<double> &actualY, vector<PredictResult> 
             if(i>=begin && i<end)
                 continue;
             // training set
-			idx_genome = train_set.get_start_index(perm[i]);
+            idx_genome = train_set.get_start_index(perm[i]);
             for(j=0; j<train_set[perm[i]].num_atoms; ++j) {
                 int _type = train_set[perm[i]].atom_type[j];
                 for(k=0; k<num_xs[_type]; ++k) {
@@ -311,7 +311,7 @@ void do_each(int begin, int end, vector<double> &actualY, vector<PredictResult> 
         }
         // train models
         vector<svm_model*> models(num_types, NULL);
-		idx_genome = train_set.get_start_index(-1);
+        idx_genome = train_set.get_start_index(-1);
         for(i=0; i<num_types; ++i) {
             para->C = population[idx_genome];
             para->gamma = population[idx_genome+1];
@@ -359,7 +359,7 @@ void do_each(int begin, int end, vector<double> &actualY, vector<PredictResult> 
             if(val.y < 0)
                 cout << "Warning(" << __FILE__ << ":" << __LINE__ << "): predicted Cl is negative!!" << endl;
             val.y = log10(val.y);
-			sample_index.push_back(perm[i]);
+            sample_index.push_back(perm[i]);
             actualY.push_back(train_set[perm[i]].y);
             predictY.push_back(val);
         }
@@ -380,7 +380,7 @@ void doCV(int nfolds, vector<double> &actualY, vector<PredictResult> &predictY, 
     
     actualY.clear();
     predictY.clear();
-	sample_index.clear();
+    sample_index.clear();
     for(i=0; i<nfolds; ++i) {
         int begin = i*n/nfolds;
         int end   = (i+1)*n/nfolds;

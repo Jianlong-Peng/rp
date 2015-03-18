@@ -5,7 +5,7 @@
 #        Email: jlpeng1201@gmail.com
 #     HomePage: 
 #      Created: 2014-09-15 19:57:13
-#   LastChange: 2015-03-03 15:06:51
+#   LastChange: 2015-03-06 14:33:21
 #      History:
 =============================================================================*/
 #include <iostream>
@@ -70,7 +70,7 @@ PredictResult Molecule::predict(vector<svm_model*> &models, bool do_log)
             val.som.push_back(som[j]);
     }
     if(val.y < 0.)
-        cout << "Warning(Molecule::predict): predicted CL is negative!!" << endl;
+        cout << "Warning(Molecule::predict): sum(10^eachy) overflow!!!" << endl;
     val.y = log10(val.y);
 #ifdef DEBUG
     cout << "predicted log10(CLint)=" << val.y << endl;
@@ -120,7 +120,7 @@ PredictResult Molecule::predict(vector<svm_model*> &models, Sample &train,
         free(nodex);
     }
     if(val.y < 0.) {
-        cout << "Warning(Molecule::predict): predicted Cl is negative!!" << endl;
+        cout << "Warning(Molecule::predict): sum(10^eachy) overflow!!!" << endl;
     }
     val.y = log10(val.y);
     
@@ -186,6 +186,14 @@ void Sample::read_problem(string train_des_file, string train_som_file)
         ++i;
     }
     inf2.close();
+    //~~~~~~~~~~~~~~~construct genome_index~~~~~~~~~~~
+    genome_index.clear();
+    int k = 0;
+    for(vector<Molecule>::size_type i=0; i<data.size(); ++i) {
+        genome_index.push_back(k);
+        k += data[i].num_atoms;
+    }
+    genome_index.push_back(k);
     //~~~~~~~~~~~~~~~read SOMs~~~~~~~~~~~~~~~~~~~~~~~~~
     if(train_som_file.size() == 0)
         return ;
@@ -245,13 +253,6 @@ void Sample::read_problem(string train_des_file, string train_som_file)
     inf3.close();
     this->som = true;
     
-	int k = 0;
-	genome_index.clear();
-	for(vector<Molecule>::size_type i=0; i<data.size(); ++i) {
-		genome_index.push_back(k);
-		k += data[i].num_atoms;
-	}
-	genome_index.push_back(k);
 }
 
 void Sample::write_problem(string outfile)
@@ -320,7 +321,7 @@ vector<PredictResult> Sample::predict(vector<svm_model*> &models, bool do_log)
 #ifdef DEBUG
         cout << ">>> " << data[i].name << "\t" << data[i].y << endl;
 #endif
-        predictY.push_back(data[i].predict(models, do_log));
+        predictY.push_back(data[i].predict(models,do_log));
     }
     
     return predictY;    
@@ -400,6 +401,13 @@ double calcRSS(const vector<double> &actualY, const vector<PredictResult> &predi
     double val = 0.;
     for(vector<double>::size_type i=0; i<actualY.size(); ++i)
         val += pow(actualY[i]-predictY[i].y,2);
+    return val;
+}
+double calcRSS(const double *act, const double *pred, int n)
+{
+    double val = 0.;
+    for(int i=0; i<n; ++i)
+        val += pow(act[i]-pred[i],2);
     return val;
 }
 double calcRMSE(const vector<double> &actualY, const vector<double> &predictY)

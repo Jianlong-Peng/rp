@@ -20,7 +20,7 @@
 #include <cstdlib>
 #include <cmath>
 #include <cstring>
-#include "tools.h"
+#include "../utilities/tools.h"
 #include "../svm/svm.h"
 #include "extern_tools.h"
 #include <ga/garandom.h>
@@ -139,7 +139,6 @@ int main(int argc, char *argv[])
     construct_svm_problems_parameters();
 
     read_train_partition(train_partition);
-    cout << "len(population)=" << population.size() << endl;
 
     if(cgp_file != "")
         load_cgp(cgp_file);
@@ -164,7 +163,7 @@ int main(int argc, char *argv[])
              randomize_samples(false);
              vector<double> actualY;
              vector<PredictResult> predictY;
-			 vector<int> sample_index;
+             vector<int> sample_index;
              doCV(nfolds, actualY, predictY, sample_index, population, true);
              double rmse = calcRMSE(actualY, predictY);
              double r = calcR(actualY, predictY);

@@ -15,7 +15,7 @@
 #include <sstream>
 #include <algorithm>
 #include <iterator>
-#include "tools.h"
+#include "../utilities/tools.h"
 #include "extern_tools.h"
 #include "operators.h"
 #include <pthread.h>
@@ -31,7 +31,8 @@ string som_file("");
 string pop_file("");
 int run(-1);
 vector<GA1DArrayGenome<float> > genomes;
-unsigned seed(0);
+unsigned actual_seed(0);
+int freq_flush(50);
 
 // extern variables
 // the following is filled by corresponding functions
@@ -62,7 +63,7 @@ vector<vector<vector<double> > > kernel_matrix;  // not used here
 
 void print_null(const char *s) {}
 void exit_with_help(const char *name);
-void parse_options(int argc, char *argv[]);
+void parse_args(const char *infile);
 void load_population();
 void find_best_genome();
 
@@ -73,20 +74,29 @@ int main(int argc, char *argv[])
         cout << " " << argv[i];
     cout << endl;
 
-    if(argc < 5)
+    //if(argc < 5)
+    //    exit_with_help(argv[0]);
+    if(argc != 5)
         exit_with_help(argv[0]);
 
-    parse_options(argc, argv);
+    //parse_options(argc, argv);
+    parse_args(argv[3]);
+    pop_file = argv[1];
+    run = atoi(argv[2]);
+    out_file = argv[4];
 
     svm_set_print_string_function(print_null);
 
     train_set.read_problem(train_file, som_file);
 
-    GARandomSeed(seed);
+    GARandomSeed(actual_seed);
     randomize_samples(true);
     construct_svm_problems_parameters();
 
-    cout << "number of samples: " << train_set.count_total_num_atoms() << endl
+    cout << "train_des: " << train_file << endl
+        << "train_som: " << som_file << endl
+        << "output file: " << out_file << endl
+        << "number of samples: " << train_set.count_total_num_atoms() << endl
         << "probs.size(): " << probs.size() << endl
         << "para.size(): " << para.size() << endl
         << "perm.size(): " << perm.size() << endl
@@ -97,9 +107,10 @@ int main(int argc, char *argv[])
         << "num_xs: ";
     copy(num_xs.begin(), num_xs.end(), ostream_iterator<int>(cout," "));
     cout << endl
-        << "calc_auc: " << (calc_auc?"TRUE":"FALSE") << endl
-        << "calc_iap: " << (calc_iap?"TRUE":"FALSE") << endl
-        << "calc_consistency: " << (calc_consistency?"TRUE":"FALSE") << endl
+        << "  calc_auc: " << (calc_auc?"TRUE":"FALSE") << endl
+        << "  calc_iap: " << (calc_iap?"TRUE":"FALSE") << endl
+        << "  calc_consistency: " << (calc_consistency?"TRUE":"FALSE") << endl
+        << "  calc_x2: " << (calc_x2?"TRUE":"FALSE") << endl
         << "nthread: " << nthread << endl
         << "nfolds: " << nfolds << endl
         << "repeat: " << repeat << endl
@@ -116,6 +127,20 @@ int main(int argc, char *argv[])
 }
 
 void exit_with_help(const char *name)
+{
+    cerr << endl << "OBJ" << endl
+        << "  to extract the best genome from population" << endl
+        << endl << "Usage" << endl
+        << "  " << name << " pop_file run para.txt output" << endl
+        << endl << "  pop_file: log_pop.txt" << endl
+        << "  run     : int, specify which run of population to be analyzed" << endl
+        << "  para.txt: same as input for `gap`" << endl
+        << "  output  : where to save the best genome" << endl
+        << endl;
+    exit(EXIT_FAILURE);
+}
+
+void exit_with_help_2(const char *name)
 {
     cerr << endl << "OBJ" << endl
         << "  to extract the best genome from population" << endl
@@ -146,6 +171,83 @@ void exit_with_help(const char *name)
     exit(EXIT_FAILURE);
 }
 
+void parse_args(const char *infile)
+{
+    ifstream inf(infile);
+    if(!inf) {
+        cerr << "Error: failed to open " << infile << endl;
+        exit(EXIT_FAILURE);
+    }
+    string line;
+    string obj_type("000");
+    while(getline(inf,line)) {
+        if(line.size()==0 || line[0]=='#')
+            continue;
+        string para;
+        string value;
+        istringstream is(line);
+        is >> para;
+        //if(para == "gapara_file")
+        //    is >> ga_parameter_file;
+        if(para == "train_des")
+            is >> train_file;
+        else if(para == "train_som")
+            is >> som_file;
+        //else if(para == "output")
+        //    is >> out_file;
+        else if(para == "kernel_type") {
+            is >> kernel_type;
+            if(kernel_type<0 || kernel_type>2) {
+                cerr << "Error: kernel_type should be one of 0,1,2, but " << kernel_type << " is given" << endl;
+                exit(EXIT_FAILURE);
+            }
+        }
+        else if(para == "seed")
+            is >> actual_seed;
+        else if(para == "freq_flush")
+            is >> freq_flush;
+        else if(para == "obj_type") {
+            is >> obj_type;
+            if(obj_type[0] == '1')
+                calc_auc = true;
+            if(obj_type.size()>=2 && obj_type[1]=='1')
+                calc_iap = true;
+            if(obj_type.size()>=3 && obj_type[2]=='1')
+                calc_consistency = true;
+            if(obj_type.size()>=4 && obj_type[3]=='1')
+                calc_x2 = true;
+        }
+        else if(para == "belta")
+            is >> belta;
+        else if(para == "wx2")
+            is >> wx2;
+        else if(para == "do_log") {
+            int temp;
+            is >> temp;
+            if(temp == 0)
+                do_log = false;
+        }
+        //else if(para == "operator_type")
+        //    is >> operator_type;
+        else if(para == "repeat")
+            is >> repeat;
+        else if(para == "nthread")
+            is >> nthread;
+        else
+            cerr << "Warning: invalid parameter " << para << " being ignored" << endl;
+    }
+    inf.close();
+
+    if(train_file == "") {
+        cerr << "Error: `train_des` missed" << endl;
+        exit(EXIT_FAILURE);
+    }
+    if(repeat==1 && nthread>1) {
+        cerr << "Warning: nthread will be set to be 1 when repeat=1" << endl;
+        nthread = 1;
+    }
+}
+
 void parse_options(int argc, char *argv[])
 {
     int i;
@@ -170,7 +272,7 @@ void parse_options(int argc, char *argv[])
             belta = atof(argv[++i]);
         else if(strcmp(argv[i], "--seed") == 0) {
             istringstream is(argv[++i]);
-            is >> seed;
+            is >> actual_seed;
         }
         else if(strcmp(argv[i],"--obj") == 0) {
             char *val = argv[++i];
@@ -259,7 +361,7 @@ void find_best_genome()
 
     for(vector<GA1DArrayGenome<float> >::size_type i=0; i<genomes.size(); ++i) {
         float val = myEvaluator(genomes[i]);
-        cout << "genome " << i+1 << " val=" << val << endl;
+        cout << "genome " << i+1 << " OBJ=" << val << endl;
         if(val > best_val) {
             best_val = val;
             best_i = i;

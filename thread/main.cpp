@@ -18,9 +18,10 @@
 #include <cstdlib>
 #include <ctime>
 #include <cmath>
-#include "tools.h"
+#include "../utilities/tools.h"
 #include "../svm/svm.h"
 #include "operators.h"
+#include "../utilities/operators.h"
 #include "extern_tools.h"
 #include <ga/GA1DArrayGenome.h>
 #include <ga/GASStateGA.h>
@@ -264,6 +265,7 @@ void parse_args(const char *infile)
         else
             cerr << "Warning: invalid parameter " << para << " being ignored" << endl;
     }
+    inf.close();
 
     if(train_des_file == "") {
         cerr << "Error: `train_des` missed" << endl;

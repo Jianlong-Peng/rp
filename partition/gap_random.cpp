@@ -19,7 +19,7 @@
 #include <cmath>
 #include <ga/GA1DArrayGenome.h>
 #include <ga/garandom.h>
-#include "tools.h"
+#include "../utilities/tools.h"
 #include "../svm/svm.h"
 #include "extern_tools.h"
 

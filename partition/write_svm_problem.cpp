@@ -18,7 +18,7 @@
 #include <cstdlib>
 #include <cmath>
 #include <cstring>
-#include "tools.h"
+#include "../utilities/tools.h"
 #include "../svm/svm.h"
 #include <ga/garandom.h>
 

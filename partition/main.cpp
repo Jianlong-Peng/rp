@@ -18,9 +18,10 @@
 #include <cstdlib>
 #include <ctime>
 #include <cmath>
-#include "tools.h"
+#include "../utilities/tools.h"
 #include "../svm/svm.h"
-#include "operators.h"
+#include "../utilities/operators.h"
+#include "../utilities/extern_tools.h"
 #include "extern_tools.h"
 #include <ga/GA1DArrayGenome.h>
 #include <ga/GASStateGA.h>
@@ -72,6 +73,7 @@ void parse_args(const char *infile);
 //void free_svm_problems_parameters();
 void output_best_genome(const GAGenome &genome, ostream &os);
 void print_null(const char *s) {}
+float myEvaluator(GAGenome &genome);
 
 inline void print_time(time_t& start_time, std::ostream& out) {
     time_t now_time=time(NULL);
@@ -309,4 +311,34 @@ void output_best_genome(const GAGenome &genome, ostream &os)
         os << "c=" << g.gene(k) << " g=" << g.gene(k+1) << " p=" << g.gene(k+2) << endl;
     */
 }
+
+float myEvaluator(GAGenome &genome)
+{
+    GA1DArrayGenome<float> &g = DYN_CAST(GA1DArrayGenome<float>&, genome);
+
+    // do cross-validation to estimate the genome
+    //1. randomly split the samples into n folds
+    //2. train `num_types` svm models using {n-1} folds of samples.
+    //   for each model, using 5-fold CV to determine the parameter `C,gamma,p`.
+    //   during training each model, using log10(y) as y-value
+    //3. applied trained models to the remaining samples
+    //4. calculate 1./RMSE as objective score
+    //
+    vector<double> actualY;
+    vector<PredictResult> predictY;
+        vector<int> sample_index;
+    vector<float> population;
+    for(int i=0; i<train_set.count_total_num_atoms()+num_types*3; ++i)
+        population.push_back(g.gene(i));
+    doCV(nfolds, actualY, predictY, sample_index, population, true);
+    /*
+    for(int i=0; i<nfolds; ++i) {
+        int begin = i*(train_set.num_samples())/nfolds;
+        int end   = (i+1)*(train_set.num_samples())/nfolds;
+        do_each(begin, end, actualY, predictY, g);
+    }
+    */
+    return obj(actualY, predictY, sample_index, population);
+}
+
 

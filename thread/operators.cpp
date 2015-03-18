@@ -16,11 +16,13 @@
 #include <fstream>
 #include <algorithm>
 #include <numeric>
+#include <iterator>
 #include <cstdlib>
 #include <cfloat>
 #include <ctime>
 #include <pthread.h>
-#include "tools.h"
+#include "../utilities/tools.h"
+#include "../utilities/extern_tools.h"
 #include "../svm/svm.h"
 #include "operators.h"
 #include "extern_tools.h"
@@ -37,7 +39,8 @@ using std::ifstream;
 using std::ostream;
 using std::min_element;
 using std::max_element;
-
+using std::copy;
+using std::ostream_iterator;
 
 extern int repeat;
 extern int nthread;
@@ -52,18 +55,18 @@ extern int num_types;
 //extern vector<vector<vector<double> > > kernel_matrix;
 //extern vector<vector<int> > sample_atom_index;
 extern vector<svm_parameter*> para;
-extern int operator_type;
-extern vector<bool> is_som;
+//extern int operator_type;
+//extern vector<bool> is_som;
 //extern float (*obj_func)(vector<double>&, vector<PredictResult>&);
-extern bool calc_auc;
-extern bool calc_iap;
-extern bool calc_consistency;
-extern bool calc_x2;
-extern double belta;
-extern double wx2;
+//extern bool calc_auc;
+//extern bool calc_iap;
+//extern bool calc_consistency;
+//extern bool calc_x2;
+//extern double belta;
+//extern double wx2;
 extern bool do_log;
 
-
+/*
 inline float get_random_c(int cmin=-8, int cmax=8)
 {
     return STA_CAST(float, pow(2., GARandomInt(cmin, cmax)));
@@ -298,7 +301,7 @@ int myCrossover(const GAGenome &p1, const GAGenome &p2, GAGenome *c1, GAGenome *
 
     return n;
 }
-
+*/
 /*
 float calc_sum_x2(GA1DArrayGenome<float> &g)
 {
@@ -378,6 +381,8 @@ float obj_5(vector<double> &actualY, vector<PredictResult> &predictY)
 }
 */
 
+bool cv_detail = false;
+
 class CandidateIndices
 {
 public:
@@ -400,7 +405,7 @@ pthread_mutex_t mut;
 // if begin <= end, then use all training samples to train the model, and
 // apply the model to training set
 static void do_each(int begin, int end, vector<double> &actualY, 
-	vector<PredictResult> &predictY, vector<int> &sample_index, int ii)
+    vector<PredictResult> &predictY, vector<int> &sample_index, int ii)
 {
     int i,j,k,idx_genome;
     for(i=0; i<num_types; ++i)
@@ -490,7 +495,7 @@ static void do_each(int begin, int end, vector<double> &actualY,
             if(i>=begin && i<end)
                 continue;
             // training set
-			idx_genome = train_set.get_start_index(perm[ii][i]);
+            idx_genome = train_set.get_start_index(perm[ii][i]);
             for(j=0; j<train_set[perm[ii][i]].num_atoms; ++j) {
                 int _type = train_set[perm[ii][i]].atom_type[j];
                 for(k=0; k<num_xs[_type]; ++k) {
@@ -507,7 +512,7 @@ static void do_each(int begin, int end, vector<double> &actualY,
             }
         }
         // train models
-		idx_genome = train_set.get_start_index(-1);
+        idx_genome = train_set.get_start_index(-1);
         vector<svm_model*> models(num_types, NULL);
         for(i=0; i<num_types; ++i) {
             para[ii]->C = population[idx_genome];
@@ -555,7 +560,7 @@ static void do_each(int begin, int end, vector<double> &actualY,
             if(val.y < 0)
                 cout << "Warning(" << __FILE__ << ":" << __LINE__ << "): predicted CL < 0, may be out of range!" << endl;
             val.y = log10(val.y);
-			sample_index.push_back(perm[ii][i]);
+            sample_index.push_back(perm[ii][i]);
             actualY.push_back(train_set[perm[ii][i]].y);
             predictY.push_back(val);
         }
@@ -567,7 +572,7 @@ static void do_each(int begin, int end, vector<double> &actualY,
     }
     
 }
-
+/*
 static float obj_func(vector<double> &actualY, vector<PredictResult> &predictY, vector<int> &sample_index)
 {
     int n = STA_CAST(int, actualY.size());
@@ -593,24 +598,24 @@ static float obj_func(vector<double> &actualY, vector<PredictResult> &predictY, 
     if(calc_consistency) {
         int k = 0;
         for(vector<PredictResult>::size_type i=0; i<predictY.size(); ++i) {
-			int idx_genome = train_set.get_start_index(sample_index[i]);
+            int idx_genome = train_set.get_start_index(sample_index[i]);
             for(vector<double>::size_type j=0; j<predictY[i].each_y.size(); ++j) {
                 double temp_actual  = actualY[i] + log10(population[idx_genome]);
                 double temp_predict = predictY[i].each_y[j];
                 mdelta += pow(temp_predict - temp_actual, 2);
                 ++k;
-				++idx_genome;
+                ++idx_genome;
             }
         }
         mdelta /= k;
     }
     if(calc_x2) {
         for(vector<PredictResult>::size_type i=0; i<predictY.size(); ++i) {
-			int idx_genome = train_set.get_start_index(sample_index[i]);
+            int idx_genome = train_set.get_start_index(sample_index[i]);
             double val = 0.;
             for(vector<double>::size_type j=0; j<predictY[i].each_y.size(); ++j) {
                 val += pow(population[idx_genome],2);
-				++idx_genome;
+                ++idx_genome;
             }
             mean_x2 += val;
         }
@@ -620,9 +625,12 @@ static float obj_func(vector<double> &actualY, vector<PredictResult> &predictY, 
         mrss = 1e-3;
     if(mdelta < 1e-3)
         mdelta = 1e-3;
+    pthread_mutex_lock(&mut);
+    cout << "mrss=" << mrss << " mauc=" << mauc << " miap=" << miap << " mdelta=" << mdelta << " mean_x2=" << mean_x2 << endl;
+    pthread_mutex_unlock(&mut);
     return STA_CAST(float, 1./mrss+mauc+miap+belta*1./mdelta+wx2*mean_x2);
 }
-
+*/
 static void *doCV(void *arg)
 {
     int i,j;
@@ -635,13 +643,13 @@ static void *doCV(void *arg)
             break;
         vector<double> actualY;
         vector<PredictResult> predictY;
-		vector<int> sample_index;
+        vector<int> sample_index;
         for(j=0; j<nfolds; ++j) {
             int begin = j*n/nfolds;
             int end   = (j+1)*n/nfolds;
             do_each(begin, end, actualY, predictY, sample_index, i);
         }
-        obj_values[i] = obj_func(actualY, predictY, sample_index);
+        obj_values[i] = obj(actualY, predictY, sample_index, population, cv_detail);
     }
 
     pthread_exit(0);
@@ -681,3 +689,4 @@ float myEvaluator(GAGenome &genome)
 
     return (accumulate(obj_values.begin(), obj_values.end(), 0.) / repeat);
 }
+

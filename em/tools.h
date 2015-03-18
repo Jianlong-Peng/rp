@@ -13,7 +13,7 @@
 
 #include <ctime>
 #include <vector>
-#include "../partition/tools.h"
+#include "../utilities/tools.h"
 #include "../svm/svm.h"
 
 class EM

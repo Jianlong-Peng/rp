@@ -14,7 +14,7 @@
 #include <iterator>
 #include <cmath>
 #include "extern_tools.h"
-#include "tools.h"
+#include "../utilities/tools.h"
 #include "../svm/svm.h"
 #include <ga/garandom.h>
 
@@ -40,8 +40,8 @@ void randomize_samples(bool verbose)
     perm.clear();
     perm.resize(repeat);
     cout << "to pre-randomize samples " << repeat << " times" << endl;
-	GARandomSeed();
-	cout << "GAGetRandomSeed()=" << GAGetRandomSeed() << endl;
+    GARandomSeed();
+    cout << "GAGetRandomSeed()=" << GAGetRandomSeed() << endl;
     for(int ii=0; ii<repeat; ++ii) {
         perm[ii].clear();
         perm[ii].resize(n);
@@ -92,8 +92,8 @@ void construct_svm_problems_parameters()
             int tmp = static_cast<int>(train_set[i].x[j].size());
             if(num_xs[_type] && tmp!=num_xs[_type]) {
                 cerr << "Error: incompatible number of Xs for atom type " << _type << endl
-			<< "       i=" << i << ", j=" << j << ", num=" << tmp << endl
-			<< "       num_xs[_type]=" << num_xs[_type] << endl;
+                    << "       i=" << i << ", j=" << j << ", num=" << tmp << endl
+                    << "       num_xs[_type]=" << num_xs[_type] << endl;
                 exit(EXIT_FAILURE);
             }
             num_xs[_type] = tmp;
@@ -108,10 +108,10 @@ void construct_svm_problems_parameters()
     probs.clear();
     probs.resize(repeat);
     cout << "to pre-create " << repeat << " svm problems" << endl;
-	for(int i=0; i<num_types; ++i) {
-	    cout << "for atom type " << i << ", there are " << num_each_sample[i] << " samples and "
-			<< num_xs[i] << " Xs" << endl;
-	}
+    for(int i=0; i<num_types; ++i) {
+        cout << "for atom type " << i << ", there are " << num_each_sample[i] << " samples and "
+            << num_xs[i] << " Xs" << endl;
+    }
     for(int ii=0; ii<repeat; ++ii) {
         probs[ii].resize(num_types);
         for(int i=0; i<num_types; ++i) {

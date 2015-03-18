@@ -17,7 +17,7 @@
 #include <algorithm>
 #include <iterator>
 #include "tools.h"
-#include "../partition/tools.h"
+#include "../utilities/tools.h"
 #include "../svm/svm.h"
 #include "../svm/svmtools.h"
 #ifdef NTHREAD

@@ -2,7 +2,7 @@ GXX = g++
 CFLAGS = -Wall -O2
 CFLAGS_P = -Wall -O2 -DNTHREAD
 
-OBJS = ../svm/svm.o ../svm/svmtools.o ../partition/tools.o
+OBJS = ../svm/svm.o ../svm/svmtools.o ../utilities/tools.o
 
 all: em em_p
 

@@ -11,15 +11,18 @@
 #ifndef  OPERATORS_H
 #define  OPERATORS_H
 
-#include <vector>
 #include <ga/GA1DArrayGenome.h>
-#include "tools.h"
 
+/*
 void myInitializer(GAGenome &genome);
 int myMutator(GAGenome &genome, float pmut);
 int myCrossover(const GAGenome &dad, const GAGenome &mom, GAGenome *bro, GAGenome *sis);
+*/
 float myEvaluator(GAGenome &genome);
 
+extern bool cv_detail;
+
+/*
 // 1/mrss
 float obj_1(std::vector<double>&, std::vector<PredictResult>&);
 //float obj_2(std::vector<double>&, std::vector<PredictResult>&, GA1DArrayGenome<float>&);
@@ -28,6 +31,7 @@ float obj_3(std::vector<double>&, std::vector<PredictResult>&);
 //float obj_4(std::vector<double>&, std::vector<PredictResult>&, GA1DArrayGenome<float>&);
 // 1/mrss + mIAP
 float obj_5(std::vector<double>&, std::vector<PredictResult>&);
+*/
 
 #endif   /* ----- #ifndef OPERATORS_H  ----- */
 
