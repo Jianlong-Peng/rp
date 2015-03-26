@@ -651,7 +651,7 @@ static void *doCV(void *arg)
         }
         obj_values[i] = obj(actualY, predictY, sample_index, population, false);
         if(cv_detail) {
-            double r = calcRSS(actualY,predictY);
+            double r = calcR(actualY,predictY);
             double rmse = calcRMSE(actualY,predictY);
             cout << " (rmse=" << rmse << " r=" << r << ")";
         }
