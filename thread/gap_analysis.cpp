@@ -143,7 +143,7 @@ int main(int argc, char *argv[])
     for(vector<GA1DArrayGenome<float> >::size_type i=0; i<populations.size(); ++i) {
         cout << endl << "================genome #" << i << "=====================" << endl;
         float val = myEvaluator(populations[i]);
-        cout << "  OBJ=" << val << endl;
+        cout << endl << "  OBJ=" << val << endl;
         cout << endl << "  predicting results on training set:" << endl;
         predict_test_set(train_set, static_cast<int>(i));
         cout << endl << "  predicting results on test set:" << endl;
