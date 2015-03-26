@@ -24,7 +24,8 @@ ga_partition: $(OBJS) main.o extern_tools.o ../utilities/extern_tools.o ../utili
 	@g++ $(OBJS) ../utilities/operators.o ../utilities/extern_tools.o extern_tools.o main.o $(LDFLAGS) -o ga_partition
 
 gap: ga_partition
-	ln -s ga_partition gap
+	@echo to create gap
+	@ln -s ga_partition gap
 
 gap_train: $(OBJS) ../svm/svmtools.o gap_train.o
 	@echo to build gap_train
