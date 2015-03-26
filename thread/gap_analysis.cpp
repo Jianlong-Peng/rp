@@ -139,7 +139,7 @@ int main(int argc, char *argv[])
 
     load_populations(pop_file, run);
 
-    cv_detail = true;
+    //cv_detail = true;
     for(vector<GA1DArrayGenome<float> >::size_type i=0; i<populations.size(); ++i) {
         cout << endl << "================genome #" << i << "=====================" << endl;
         float val = myEvaluator(populations[i]);
