@@ -653,7 +653,9 @@ static void *doCV(void *arg)
         if(cv_detail) {
             double r = calcR(actualY,predictY);
             double rmse = calcRMSE(actualY,predictY);
+            pthread_mutex_lock(&mut);
             cout << " (rmse=" << rmse << " r=" << r << ")";
+            pthread_mutex_unlock(&mut);
         }
     }
 
