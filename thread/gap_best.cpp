@@ -18,7 +18,7 @@
 #include "../utilities/tools.h"
 #include "extern_tools.h"
 #include "operators.h"
-#include <pthread.h>
+#include <omp.h>
 #include <ga/GA1DArrayGenome.h>
 #include <ga/garandom.h>
 

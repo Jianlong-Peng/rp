@@ -22,7 +22,7 @@
 #include "../svm/svm.h"
 #include "../svm/svmtools.h"
 #ifdef NTHREAD
-#include <pthread.h>
+#include <omp.h>
 #endif
 
 using namespace std;
@@ -388,52 +388,35 @@ double grid_search(svm_problem *prob, svm_parameter *para)
 }
 */
 #ifdef NTHREAD
-pthread_mutex_t mut;
-void *train_each(void *arg)
-{
-    int i = *(int*)arg;
-    svm_parameter *para = create_svm_parameter();  // svmtools.h
-    pthread_mutex_lock(&mut);
-    cout << "do grid search for atom type " << i << endl
-        << "number of samples: " << probs[i]->l << endl;
-    pthread_mutex_unlock(&mut);
-    CV cv(probs[i]);
-    double rmse = grid_search(cv, para, 5, false, -1, calcRSS);  // svmtools.h
-    pthread_mutex_lock(&mut);
-    cout << "best svm parameter for atom type " << i << ":  "
-        << "c=" << para->C << ", g=" << para->gamma << ", p=" << para->p
-        << ",  RSS=" << rmse << endl;
-    pthread_mutex_unlock(&mut);
-    svm_model *model = svm_train(probs[i], para);
-    ostringstream os;
-    os << outname << "_" << i;
-    svm_save_model(os.str().c_str(), model);
-    svm_destroy_param(para);
-    svm_free_and_destroy_model(&model);
-
-    pthread_exit(0);
-}
 void train_save_svm_models()
 {
     int n = static_cast<int>(probs.size());
     int i;
-    vector<int> prob_index(n);
-    for(i=0; i<n; ++i)
-        prob_index[i] = i;
 
-    pthread_t *thread = (pthread_t*)malloc(sizeof(pthread_t)*n);
-    memset(thread, 0, sizeof(pthread_t)*n);
+    #pragma omp parallel for schedule(static)
     for(i=0; i<n; ++i) {
-        int retval = pthread_create(&thread[i], NULL, train_each, &prob_index[i]);
-        if(retval)
-            cerr << "Error: failed to create thread " << i+1 << endl;
+        svm_parameter *para = create_svm_parameter();  // svmtools.h
+        #pragma omp critical
+        {
+            cout << "do grid search for atom type " << i << endl
+                << "number of samples: " << probs[i]->l << endl;
+        }
+        CV cv(probs[i]);
+        double rmse = grid_search(cv, para, 5, false, -1, calcRSS);  // svmtools.h
+        #pragma omp critical
+        {
+            cout << "best svm parameter for atom type " << i << ":  "
+                << "c=" << para->C << ", g=" << para->gamma << ", p=" << para->p
+                << ",  RSS=" << rmse << endl;
+        }
+        svm_model *model = svm_train(probs[i], para);
+        ostringstream os;
+        os << outname << "_" << i;
+        svm_save_model(os.str().c_str(), model);
+        svm_destroy_param(para);
+        svm_free_and_destroy_model(&model);
     }
-    for(i=0; i<n; ++i) {
-        int retval = pthread_join(thread[i], NULL);
-        if(retval)
-            cerr << "Error: failed to join thread" << i+1 << endl;
-    }
-    free(thread);
+
 }
 
 #else

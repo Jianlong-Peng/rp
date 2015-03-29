@@ -1,7 +1,7 @@
 GA_ROOT = /home/xmluo/jlpeng/program/ga-svm/galib247
 CFLAGS = -I$(GA_ROOT) -Wall -O2
 #CFLAGS = -I$(GA_ROOT) -Wall -g
-CFLAGS_P = -I$(GA_ROOT) -Wall -O2 -DNTHREAD
+CFLAGS_P = -I$(GA_ROOT) -Wall -O2 -DNTHREAD -openmp
 #CFLAGS_P = -I$(GA_ROOT) -Wall -g -DNTHREAD
 LDFLAGS = -L$(GA_ROOT)/ga -lga
 
@@ -13,7 +13,7 @@ all: $(EXES)
 
 gap_train_p.o: gap_train.cpp
 	@echo to build gap_train_p.o
-	@g++ $(CFLAGS_P) gap_train.cpp -c -o gap_train_p.o
+	@icc $(CFLAGS_P) gap_train.cpp -c -o gap_trian_p.o
 
 %.o: %.cpp
 	@echo to build $@
@@ -33,7 +33,7 @@ gap_train: $(OBJS) ../svm/svmtools.o gap_train.o
 
 gap_train_p: $(OBJS) ../svm/svmtools.o gap_train_p.o
 	@echo to build gap_train_p
-	@g++ $(OBJS) ../svm/svmtools.o gap_train_p.o -o gap_train_p -lpthread
+	@icc -openmp $(OBJS) ../svm/svmtools.o gap_train_p.o -o gap_train_p
 
 gap_predict: $(OBJS) gap_predict.o
 	@echo to build gap_predict
@@ -60,7 +60,7 @@ write_svm_problem: $(OBJS) write_svm_problem.o
 	@g++ $(OBJS) write_svm_problem.o $(LDFLAGS) -o write_svm_problem
 
 test: svm.o test.cpp
-	g++ -Wall -O2 svm.o test.cpp -o test -lpthread
+	icc -openmp -O2 svm.o test.cpp -o test
 
 svm-train: svm-train.c svm.o
 	g++ $(CFLAGS) svm.o svm-train.c -o svm-train

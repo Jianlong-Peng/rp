@@ -55,9 +55,6 @@ freq_flush 50
 # do 5-fold Cross-validation {repeat} times
 repeat 30
 
-# multi-thread mode
-nthread 10
-
 #number of independent variables for each type of SOMs
 #num_xs  20 20 20 20 11 20 14
 

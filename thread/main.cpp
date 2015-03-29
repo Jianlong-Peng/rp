@@ -51,7 +51,6 @@ vector<svm_parameter*> para;
 int operator_type(1);
 vector<bool> is_som;
 int repeat(1);   // do cross-validation {repeat} times
-int nthread(1);
 //float (*obj_func)(vector<double>&, vector<PredictResult>&) = obj_1;
 bool calc_auc(false);
 bool calc_iap(false);
@@ -263,8 +262,6 @@ void parse_args(const char *infile)
             is >> operator_type;
         else if(para == "repeat")
             is >> repeat;
-        else if(para == "nthread")
-            is >> nthread;
         else
             cerr << "Warning: invalid parameter " << para << " being ignored" << endl;
     }
@@ -286,10 +283,6 @@ void parse_args(const char *infile)
         cerr << "Error: `operator_type` can only be 1 or 2, but " << operator_type << " is given" << endl;
         exit(EXIT_FAILURE);
     }
-    if(repeat==1 && nthread>1) {
-        cerr << "Warning: nthread will be set to be 1 when repeat=1" << endl;
-        nthread = 1;
-    }
     cout << "train_des: " << train_des_file << endl
         << "train_som: " << train_som_file << endl
         << "output file: " << output_file << endl
@@ -304,7 +297,6 @@ void parse_args(const char *infile)
         << "wauc: " << wauc << endl
         << "do_log: " << (do_log?"TRUE":"FALSE") << endl
         << "repeat: " << repeat << endl
-        << "nthread: " << nthread << endl;
 }
 
 // each line should be:
