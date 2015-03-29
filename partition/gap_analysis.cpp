@@ -57,6 +57,7 @@ vector<vector<float> > population;
 bool do_log(true);
 double belta(1.);
 double wx2(1.);
+double wauc(1.);
 
 void parse_args(const char *infile);
 void print_null(const char *s) {}
@@ -220,6 +221,8 @@ void parse_args(const char *infile)
             is >> belta;
         else if(para == "wx2")
             is >> wx2;
+        else if(para == "wauc")
+            is >> wauc;
         else if(para == "do_log") {
             int temp;
             is >> temp;
@@ -258,6 +261,7 @@ void parse_args(const char *infile)
         << "  calc_consistency: " << (calc_consistency?"TRUE":"FALSE") << endl
         << "belta: " << belta << endl
         << "wx2: " << wx2 << endl
+        << "wauc: " << wauc << endl
         << "do_log: " << (do_log?"TRUE":"FALSE") << endl;
 }
 static bool startswith(string &line, const char *word)

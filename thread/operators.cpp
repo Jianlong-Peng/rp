@@ -649,7 +649,14 @@ static void *doCV(void *arg)
             int end   = (j+1)*n/nfolds;
             do_each(begin, end, actualY, predictY, sample_index, i);
         }
-        obj_values[i] = obj(actualY, predictY, sample_index, population, cv_detail);
+        obj_values[i] = obj(actualY, predictY, sample_index, population, false);
+        if(cv_detail) {
+            double r = calcR(actualY,predictY);
+            double rmse = calcRMSE(actualY,predictY);
+            pthread_mutex_lock(&mut);
+            cout << " (rmse=" << rmse << " r=" << r << ")";
+            pthread_mutex_unlock(&mut);
+        }
     }
 
     pthread_exit(0);

@@ -30,7 +30,7 @@ operator_type 2
 #obj_type 1
 #
 #obj_type should be a string of length <=4
-#fitness will be 1/mean(RSS) + mean(AUC(xi)) + mean(IAP) + belta * {1/mean(consistency)} + wx2 * mean{sum_j{x_ij^2}}
+#fitness will be 1/mean(RSS) + wauc * mean(AUC(xi)) + mean(IAP) + belta * {1/mean(consistency)} + wx2 * mean{sum_j{x_ij^2}}
 #where, belta = [1,10]
 #obj_type[0]: mean(AUC(xi)),  where AUC(xi) to estimate whether the atom contribution is compatible to experimentally observed SOMs
 #obj_type[1]: mean(IAP)
@@ -39,9 +39,11 @@ operator_type 2
 #therefore, if obj_type=1000, then fitness = 1/mean(RSS) + mean(AUC)
 obj_type 0110
 
-belta 2
+belta 1
 
-wx2 5
+wx2 1
+
+wauc 1
 
 #if do_log == 0, then models will be trained based on y instead of log10(y)
 do_log 1
@@ -72,11 +74,11 @@ kernel_type 0
 
 #descriptors of training set
 #y-values have been transformed by log10()
-train_des  /home/xmluo/jlpeng/hepatic_clearance/20141101/train
+train_des  /home/simmluo/users/jlpeng/clearance/20141101/train
 
 #SOMs of training set (optional)
 #if given, larger value will be assigned for atoms actaully metabolized
-train_som  /home/xmluo/jlpeng/hepatic_clearance/dataset/sites_of_metabolism_train.txt
+train_som  /home/simmluo/users/jlpeng/clearance/dataset/sites_of_metabolism_train.txt
 
 #file to save best partition of clearance
 #by default: atom contribution of clearance is in the form of log10()

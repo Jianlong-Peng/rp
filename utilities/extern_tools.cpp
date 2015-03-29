@@ -27,6 +27,7 @@ extern bool calc_x2;
 extern Sample train_set;
 extern double belta;
 extern double wx2;
+extern double wauc;
 
 float obj(vector<double> &actualY, vector<PredictResult> &predictY,
         vector<int> &sample_index, vector<float> &population, bool verbose)
@@ -81,7 +82,7 @@ float obj(vector<double> &actualY, vector<PredictResult> &predictY,
         mrss = 1e-3;
     if(mdelta < 1e-3)
         mdelta = 1e-3;
-    return static_cast<float>(1./mrss+mauc+miap+belta/mdelta+wx2*mean_x2);
+    return static_cast<float>(1./mrss+wauc*mauc+miap+belta/mdelta+wx2*mean_x2);
 }
 
 

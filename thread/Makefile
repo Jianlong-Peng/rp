@@ -18,7 +18,8 @@ ga_partition: $(OBJS) operators.o main.o ../utilities/extern_tools.o ../utilitie
 	@g++ ../utilities/operators.o ../utilities/extern_tools.o $(OBJS) operators.o main.o $(LDFLAGS) -o ga_partition
 
 gap: ga_partition
-	ln -s ga_partition gap
+	@echo to create gap
+	@ln -s ga_partition gap
 
 gap_cv: $(OBJS) gap_cv.o
 	@echo to build gap_cv

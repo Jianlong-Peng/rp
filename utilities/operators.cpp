@@ -57,7 +57,7 @@ void myInitializer(GAGenome &genome)
                 if(is_som[k+j])
                     temp = GARandomFloat(0.5, 1.);
                 else
-                    temp =GARandomFloat(0., 0.5);
+                    temp = GARandomFloat(0., 0.5);
             }
             else
                 temp = GARandomFloat(0., 1.);
@@ -140,7 +140,7 @@ int myMutator(GAGenome &genome, float pmut)
     else {
         for(int n=0; n<nMut; ++n) {
             int i = GARandomInt(0, train_set.num_samples()-1);
-            int start = (i==0)?i:(train_set.count_num_atoms_until(i-1)-1);
+            int start = (i==0)?i:(train_set.count_num_atoms_until(i-1));
             int end = start+train_set[i].num_atoms-1;
             int j = GARandomInt(start, end);
             int k = GARandomInt(start, end);

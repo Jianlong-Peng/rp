@@ -51,8 +51,9 @@ bool calc_auc(false);
 bool calc_iap(false);
 bool calc_consistency(false);
 bool calc_x2(false);
-double belta(1);
-double wx2(5);
+double belta(1.);
+double wx2(1.);
+double wauc(1.);
 bool do_log(true);
 unsigned actual_seed(0);
 int freq_flush(50);
@@ -142,7 +143,7 @@ int main(int argc, char *argv[])
     for(vector<GA1DArrayGenome<float> >::size_type i=0; i<populations.size(); ++i) {
         cout << endl << "================genome #" << i << "=====================" << endl;
         float val = myEvaluator(populations[i]);
-        cout << "  OBJ=" << val << endl;
+        cout << endl << "  OBJ=" << val << endl;
         cout << endl << "  predicting results on training set:" << endl;
         predict_test_set(train_set, static_cast<int>(i));
         cout << endl << "  predicting results on test set:" << endl;
@@ -219,6 +220,8 @@ void parse_args(const char *infile)
             is >> belta;
         else if(para == "wx2")
             is >> wx2;
+        else if(para == "wauc")
+            is >> wauc;
         else if(para == "do_log") {
             int temp;
             is >> temp;
@@ -268,6 +271,7 @@ void parse_args(const char *infile)
         << "  calc_x2: " << (calc_x2?"TRUE":"FALSE") << endl
         << "belta: " << belta << endl
         << "wx2: " << wx2 << endl
+        << "wauc: " << wauc << endl
         << "do_log: " << (do_log?"TRUE":"FALSE") << endl
         << "repeat: " << repeat << endl
         << "nthread: " << nthread << endl;

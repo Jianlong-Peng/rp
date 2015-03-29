@@ -54,6 +54,7 @@ int nfolds(5);
 int repeat(30);
 double belta(1.);
 double wx2(1.);
+double wauc(1.);
 // the following is fixed.
 int kernel_type(0);      // RBF
 int operator_type(1);    // not used here
@@ -115,7 +116,8 @@ int main(int argc, char *argv[])
         << "nfolds: " << nfolds << endl
         << "repeat: " << repeat << endl
         << "belta: " << belta << endl
-        << "wx2: " << wx2 << endl;
+        << "wx2: " << wx2 << endl
+        << "wauc: " << wauc << endl;
 
     load_population();
     cout << "genomes.size(): " << genomes.size() << endl;
@@ -221,6 +223,8 @@ void parse_args(const char *infile)
             is >> belta;
         else if(para == "wx2")
             is >> wx2;
+        else if(para == "wauc")
+            is >> wauc;
         else if(para == "do_log") {
             int temp;
             is >> temp;
