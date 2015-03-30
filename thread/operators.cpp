@@ -5,7 +5,7 @@
 #        Email: jlpeng1201@gmail.com
 #     HomePage: 
 #      Created: 2014-09-20 10:12:52
-#   LastChange: 2015-03-30 06:13:50
+#   LastChange: 2015-03-30 16:00:43
 #      History:
 =============================================================================*/
 #include <iostream>
@@ -54,6 +54,8 @@ extern bool do_log;
 
 
 bool cv_detail = false;
+vector<float> obj_values;
+vector<float> population;
 
 
 // if begin <= end, then use all training samples to train the model, and

@@ -1,6 +1,6 @@
-GXX = g++
+GXX = icc
 CFLAGS = -Wall -O2
-CFLAGS_P = -Wall -O2 -DNTHREAD
+CFLAGS_P = -Wall -O2 -DNTHREAD -openmp
 
 OBJS = ../svm/svm.o ../svm/svmtools.o ../utilities/tools.o
 
@@ -20,11 +20,11 @@ all: em em_p
 
 em_p: main_p.o tools_p.o $(OBJS)
 	@echo to build em_p
-	@g++ $(OBJS) tools_p.o main_p.o -o em_p -lpthread
+	@$(GXX) -openmp $(OBJS) tools_p.o main_p.o -o em_p -lpthread
 
 em: main.o tools.o $(OBJS)
 	@echo to build em
-	@g++ $(OBJS) tools.o main.o -o em
+	@$(GXX) $(OBJS) tools.o main.o -o em
 
 clean:
 	rm *.o em em_p
