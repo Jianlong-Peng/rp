@@ -139,7 +139,8 @@ int main(int argc, char *argv[])
 
     load_populations(pop_file, run);
 
-    cv_detail = true;
+    //cv_detail = true;
+    time_t start_time = time(NULL);
     for(vector<GA1DArrayGenome<float> >::size_type i=0; i<populations.size(); ++i) {
         cout << endl << "================genome #" << i << "=====================" << endl;
         float val = myEvaluator(populations[i]);
@@ -149,6 +150,9 @@ int main(int argc, char *argv[])
         cout << endl << "  predicting results on test set:" << endl;
         predict_test_set(test_set, static_cast<int>(i));
     }
+    time_t end_time = time(NULL);
+    cout << "begin: " << ctime(&start_time);
+    cout << "end  : " << ctime(&end_time);
 
     free_svm_problems_parameters();
 

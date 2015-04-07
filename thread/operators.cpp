@@ -5,7 +5,7 @@
 #        Email: jlpeng1201@gmail.com
 #     HomePage: 
 #      Created: 2014-09-20 10:12:52
-#   LastChange: 2015-03-30 16:00:43
+#   LastChange: 2015-03-30 06:13:50
 #      History:
 =============================================================================*/
 #include <iostream>
@@ -41,6 +41,7 @@ using std::min_element;
 using std::max_element;
 using std::copy;
 using std::ostream_iterator;
+using std::accumulate;
 
 extern int repeat;
 extern Sample train_set;
@@ -56,7 +57,6 @@ extern bool do_log;
 bool cv_detail = false;
 vector<float> obj_values;
 vector<float> population;
-
 
 // if begin <= end, then use all training samples to train the model, and
 // apply the model to training set
@@ -161,7 +161,6 @@ float myEvaluator(GAGenome &genome)
 {
     GA1DArrayGenome<float> &g = DYN_CAST(GA1DArrayGenome<float>&, genome);
     
-    myIndex = new CandidateIndices(repeat);
     obj_values.clear();
     obj_values.resize(repeat);
     population.clear();
@@ -184,7 +183,10 @@ float myEvaluator(GAGenome &genome)
             double r = calcR(actualY,predictY);
             double rmse = calcRMSE(actualY,predictY);
             #pragma omp critical
-            cout << " (rmse=" << rmse << " r=" << r << ")";
+            {
+                cout << "i=" << i << "; thread=" << omp_get_thread_num();
+                cout << " rmse=" << rmse << " r=" << r << endl;
+            }
         }
     }
     

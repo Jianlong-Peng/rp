@@ -158,6 +158,9 @@ int main(int argc, char *argv[])
     */
     if(repeat > 1) {
         cout << "rmse r" << endl;
+        vector<double> all_rmse(repeat, 0.);
+        vector<double> all_r(repeat, 0.);
+        #pragma omp parallel for schedule(static) num_threads(nthreads)
         for(i=0; i<repeat; ++i) {
              GARandomSeed();
              randomize_samples(false);

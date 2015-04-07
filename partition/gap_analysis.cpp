@@ -150,12 +150,11 @@ int main(int argc, char *argv[])
         doCV(nfolds, actualY, predictY, sample_index, population[i], true);
         double rmse = calcRMSE(actualY, predictY);
         double r = calcR(actualY, predictY);
+        double val = obj_func(actualY,predictY,sample_index,i);
         cout << endl << "  result of " << nfolds << "-fold cross-validation" << endl
             << "  RMSE=" << rmse << endl
             << "     R=" << r << endl
-            //<< "   OBJ=" << obj(actualY,predictY,sample_index,population[i],true) << endl
-            << "   OBJ=" << obj_func(actualY,predictY,sample_index,i) << endl
-            << endl;
+            << "   OBJ=" << val << endl;
         cout << endl << "  predicting results on training set:" << endl;
         predict_test_set(train_set, static_cast<int>(i));
         if(test_file != "") {
@@ -454,6 +453,6 @@ float obj_func(vector<double> &actualY, vector<PredictResult> &predictY,
         mrss = 1e-3;
     if(mdelta < 1e-3)
         mdelta = 1e-3;
-    return STA_CAST(float, 1./mrss+mauc+miap+1./mdelta+10*mean_x2);
+    return STA_CAST(float, 1./mrss+wauc*mauc+miap+belta/mdelta+wx2*mean_x2);
 }
 

@@ -12,7 +12,7 @@
 '''
 import sys
 from getopt import getopt
-from tools import report, load_des, load_predict
+from tools import report, load_des, load_predict, valid
 
 def main(argv=sys.argv):
     if len(argv) < 9:
@@ -62,25 +62,20 @@ Attention
     assert len(args) == 0
     assert k is not None and pred_file is not None and som_file is not None and des_file is not None
 
-    predict = load_predict(pred_file)  #key=name, value=[[site,y],...] which has been sorted
-    print "totally %d samples being predicted with atom contributions"%len(predict.keys())
-    des = load_des(des_file,predict.keys(),delta)   #key=mol_name, value=[(atom,type),...]
+    des = load_des(des_file,[],delta)   #key=mol_name, value=[(atom,type),...]
     print "totally %d samples being loaded from %s"%(len(des.keys()), des_file)
+    predict_all,predict_no6 = load_predict(pred_file, des)  #key=name, value=[[site,y],...] which has been sorted
+    print "len(predict_all.keys()):",len(predict_all.keys())
+    print "len(predict_no6.keys()):",len(predict_no6.keys())
     actual_all,actual_no6 = load_som(som_file,des)      #key=name, value=[site1,site2,...]
     print "len(actual_all.keys()):",len(actual_all.keys())
     print "len(actual_no6.keys()):",len(actual_no6.keys())
 
     print "===report considering all types of SOMs except those with more than one atoms==="
-    report(actual_all, predict, k)
+    report(actual_all, predict_all, k)
     print "\n===report excluding SOM type 6 (O-conjugation) and more than one atoms==="
-    report(actual_no6, predict, k)
+    report(actual_no6, predict_no6, k)
 
-
-def valid(actual,atom):
-    for a,t in actual:
-        if a==atom and t=='6':
-            return False
-    return True
 
 def load_som(infile,des):
     actual_all = {}

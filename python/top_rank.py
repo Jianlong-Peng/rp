@@ -11,7 +11,7 @@
 #=============================================================================
 '''
 import sys
-from tools import report, load_des, load_predict
+from tools import report, load_des, load_predict, valid
 
 def main(argv=sys.argv):
 	if len(argv) != 5:
@@ -37,20 +37,14 @@ Attention
 	
 	des = load_des(argv[4])   #key=mol_name, value=[(atom,type),...]
 	k = int(argv[1])
-	predict = load_predict(argv[2])  #key=name, value=[[site,y],...] which has been sorted
+	predict_all,predict_no6 = load_predict(argv[2],des)  #key=name, value=[[site,y],...] which has been sorted
 	actual_all,actual_no6 = load_som(argv[3],des)      #key=name, value=[site1,site2,...]
 
 	print "===report considering all types of SOMs except those with more than one atoms==="
-	report(actual_all, predict, k)
+	report(actual_all, predict_all, k)
 	print "\n===report excluding SOM type 6 (O-conjugation) and more than one atoms==="
-	report(actual_no6, predict, k)
+	report(actual_no6, predict_no6, k)
 
-
-def valid(actual,atom):
-	for a,t in actual:
-		if a==atom and t=='6':
-			return False
-	return True
 
 def load_som(infile,des):
 	actual_all = {}
@@ -59,14 +53,15 @@ def load_som(infile,des):
 	line = inf.readline()
 	for line in inf:
 		line = line.strip().split("\t")
+		name = line[0].split("\\")[-1].split(".")[0]
 		actual_all[line[0]] = []
 		actual_no6[line[0]] = []
 		for atom in line[3:]:
 			if "-" in atom:
 				continue
-			actual_all[line[0]].append(atom)
-			if valid(des[line[0]],atom):
-				actual_no6[line[0]].append(atom)
+			actual_all[name].append(atom)
+			if valid(des[name],atom):
+				actual_no6[name].append(atom)
 	inf.close()
 	return actual_all,actual_no6
 

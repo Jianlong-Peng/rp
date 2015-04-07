@@ -14,35 +14,47 @@
 def report(actual, predict, k):
     results = []
     for i in xrange(1,k+1):
-        total,miss,right = estimate(actual, predict, i)
-        results.append((i,right,total-miss-right))
-    print "totally %d samples, of which %d has no SOM labeled"%(total,miss)
+        total,miss,right,fail = estimate(actual, predict, i)
+        results.append((i,right,total-miss-right-fail))
+    print "totally %d samples, of which %d has no SOM labeled, %d can't be predicted"%(total,miss,fail)
     print "k  right error accuracy"
     for i,right,error in results:
         print "%-2d %-5d %-5d %-g"%(i,right,error,1.*right/(right+error))
     print ""
 
 
-def load_predict(infile):
-    predict = {}
+def valid(actual, atom):
+    for a,t in actual:
+        if a==atom and t=='6':
+            return False
+    return True
+
+def load_predict(infile,des):
+    predict_all = {}
+    predict_no6 = {}
     inf = open(infile,'r')
     for line in inf:
         line = line.split()
         if len(line) == 2:
             continue
         name = line[0].split("\\")[-1].split(".")[0]
-        values = []
+        values_all = []
+        values_no6 = []
         if ":" in line[2]:
             i = 2
         else:
             i = 3
         for j in xrange(i,len(line)):
             idx,val = line[j].split(":")
-            values.append((idx,float(val)))
-        values.sort(key=lambda x:x[1], reverse=True)
-        predict[name] = values
+            values_all.append((idx,float(val)))
+            if valid(des[name], idx):
+                values_no6.append((idx,float(val)))
+        values_all.sort(key=lambda x:x[1], reverse=True)
+        values_no6.sort(key=lambda x:x[1], reverse=True)
+        predict_all[name] = values_all
+        predict_no6[name] = values_no6
     inf.close()
-    return predict
+    return predict_all,predict_no6
 
 
 def load_des(infile,candidates=[],delta=None):
@@ -76,8 +88,12 @@ def estimate(actual, predict, k):
     total = 0
     miss  = 0    #there is no SOM labeled
     right = 0
+    fail  = 0    #number of samples can't be predicted.
     for name in actual.keys():
         total += 1
+        if not predict.has_key(name):
+            fail += 1
+            continue
         if len(actual[name]) == 0:
             miss += 1
             continue
@@ -88,5 +104,5 @@ def estimate(actual, predict, k):
                 found = True
         if found:
             right += 1
-    return total,miss,right
+    return total,miss,right,fail
 

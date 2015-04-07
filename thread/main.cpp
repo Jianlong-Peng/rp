@@ -296,7 +296,7 @@ void parse_args(const char *infile)
         << "wx2: " << wx2 << endl
         << "wauc: " << wauc << endl
         << "do_log: " << (do_log?"TRUE":"FALSE") << endl
-        << "repeat: " << repeat << endl
+        << "repeat: " << repeat << endl;
 }
 
 // each line should be:

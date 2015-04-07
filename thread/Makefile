@@ -1,5 +1,5 @@
 GXX = icc
-GA_ROOT = /home/xmluo/jlpeng/program/ga-svm/galib247
+GA_ROOT = /home/simm22/jlpeng/galib247
 CFLAGS = -I$(GA_ROOT) -Wall -O2 -openmp
 #CFLAGS = -I$(GA_ROOT) -Wall -g
 LDFLAGS = -L$(GA_ROOT)/ga -lga
