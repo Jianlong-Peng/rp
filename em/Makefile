@@ -20,7 +20,7 @@ all: em em_p
 
 em_p: main_p.o tools_p.o $(OBJS)
 	@echo to build em_p
-	@$(GXX) -openmp $(OBJS) tools_p.o main_p.o -o em_p -lpthread
+	@$(GXX) -openmp $(OBJS) tools_p.o main_p.o -o em_p
 
 em: main.o tools.o $(OBJS)
 	@echo to build em

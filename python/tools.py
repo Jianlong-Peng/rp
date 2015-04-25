@@ -21,8 +21,7 @@ def report(actual, predict, k):
     for i,right,error in results:
         print "%-2d %-5d %-5d %-g"%(i,right,error,1.*right/(right+error))
     print ""
-
-    iap = calcIAP(actual, predict)
+    iap = calcIAP(actual,predict)
     print "IAP=%g\n"%iap
 
 
@@ -107,22 +106,25 @@ def estimate(actual, predict, k):
                 found = True
         if found:
             right += 1
+            print name,k
     return total,miss,right,fail
 
 def calcIAP(actual, predict):
-    pos = []
+    pos = []   #[val,...]
     neg = []
     for name in predict.keys():
-        for atom,y in predict[name]:
-	    if atom in actual[name]:
-	        pos.append(y)
-	    else:
-	        neg.append(y)
+        for atom,y in predict[name]:   #[(site,y),...]
+            if atom in actual[name]:
+                pos.append(y)
+            else:
+                neg.append(y)
+
     num_large = 0
     for val1 in pos:
         for val2 in neg:
-	    if val1 > val2:
-	        num_large += 1
+            if val1 > val2:
+                num_large += 1
     ret = 1.0 * num_large / (len(pos)*len(neg))
     return ret
+
 

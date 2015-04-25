@@ -161,6 +161,7 @@ vector<svm_model*> EM::train_models()
         models[i] = svm_train(_probs[i], para);
         svm_destroy_param(para);
     }
+
     return models;
 }
 
